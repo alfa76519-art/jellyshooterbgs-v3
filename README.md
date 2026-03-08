@@ -126,4 +126,4 @@ All colors use `var(--css-variable)` — zero hardcoded values in components.
 
 ---
 
-*Built with 🍬 by Operative-07 × Gemini*
+*Built with 🍬 by Alfa-art × Gemini*
