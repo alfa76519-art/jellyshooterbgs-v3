@@ -2,9 +2,9 @@
 
 > **Web3 dApp on OP_NET** · Provably fair on-chain raffle · $BGS Token · NFT Boost System
 
-[![Deploy](https://github.com/YOUR_USERNAME/jellyshooterbgs-v3/actions/workflows/deploy.yml/badge.svg)](https://github.com/YOUR_USERNAME/jellyshooterbgs-v3/actions)
+[![Deploy](https://github.com/alfa76519-art/jellyshooterbgs-v3/actions/workflows/deploy.yml/badge.svg)](https://github.com/alfa76519-art/jellyshooterbgs-v3/actions)
 
-**Live Demo:** https://YOUR_USERNAME.github.io/jellyshooterbgs-v3/
+**Live Demo:** https://alfa76519-art.github.io/jellyshooterbgs-v3/
 
 ---
 
@@ -128,4 +128,4 @@ All colors use `var(--css-variable)` — zero hardcoded values in components.
 
 ---
 
-*Built with 🍬 by Operative-07 × Bob*
+*Built with 🍬 by Operative-07 × Gemini*
