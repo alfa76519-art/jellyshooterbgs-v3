@@ -18,7 +18,7 @@ jobs:
           node-version: 20
       - name: Install & Build
         run: |
-          npm install
+          npm install --no-package-lock
           npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
