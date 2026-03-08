@@ -297,7 +297,7 @@ function computeActiveBoost(ownedNFTs) {
 /* ═══════════════════════════════════════════════════════════════
    DATA
 ═══════════════════════════════════════════════════════════════ */
-const INITIAL_RAFFLES = [
+const  = [
   { id:1, emoji:'🪼', name:'Jellyfish Genesis', prize:'5,000 $BGS',       price:50,  sold:73, max:100, ends:'2h 14m', hot:true  },
   { id:2, emoji:'🍑', name:'Peach Bomb',        prize:'2,500 $BGS + NFT', price:25,  sold:41, max:80,  ends:'5h 50m', hot:false },
   { id:3, emoji:'🫧', name:'Bubble Surge',      prize:'10,000 $BGS',      price:100, sold:18, max:50,  ends:'23h 00m',hot:true  },
@@ -906,7 +906,11 @@ const JellyShooterView = ({ theme, activeBoost }) => {
 ═══════════════════════════════════════════════════════════════ */
 const DashView = ({ theme, connected, balance, tickets, setTickets, setBalance, addToast, activeBoost }) => {
   const isCyber = theme === 'theme-cyber'
-  const [raffles, setRaffles] = useState(INITIAL_RAFFLES.map(r => ({ ...r })))
+  const [raffles, setRaffles] = useState([
+    { id:1, emoji:'💊', name:'Pill Genesis Drop', prize:'5,000 $PILL',     price:50,  sold:73, max:100, ends:'2h 14m', hot:true  },
+    { id:2, emoji:'🐈', name:'Motocats Rare #77',  prize:'2,500 $BGS + NFT', price:25,  sold:41, max:80,  ends:'5h 50m', hot:false },
+    { id:3, emoji:'🍔', name:'Burger King Pack',   prize:'10,000 $BGS',      price:100, sold:18, max:50,  ends:'23h 00m',hot:true  },
+  ]);
   const [buyId, setBuyId] = useState(null)
   const [revId, setRevId] = useState(null)
 
