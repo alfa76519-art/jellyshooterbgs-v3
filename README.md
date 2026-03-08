@@ -2,9 +2,7 @@
 
 > **Web3 dApp on OP_NET** · Provably fair on-chain raffle · $BGS Token · NFT Boost System
 
-[![Deploy](https://github.com/alfa76519-art/jellyshooterbgs-v3/actions/workflows/deploy.yml/badge.svg)](https://github.com/alfa76519-art/jellyshooterbgs-v3/actions)
-
-**Live Demo:** https://alfa76519-art.github.io/jellyshooterbgs-v3/
+**~~Live Demo:~~** 
 
 ---
 
