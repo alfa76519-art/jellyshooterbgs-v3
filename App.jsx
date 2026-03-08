@@ -39,7 +39,7 @@ const CSS_VARS = `
 
     --game-bg:       rgba(255,220,240,0.35);
     --game-border:   rgba(244,114,182,0.3);
-    --fuel-bar:      linear-gradient(90deg,#f9a8d4,#f472b6,#a78bfa);
+    --sugarlevel-bar:      linear-gradient(90deg,#f9a8d4,#f472b6,#a78bfa);
     --pressure-bar:  linear-gradient(90deg,#86efac,#34d399,#06b6d4);
     --boost-bar:     linear-gradient(90deg,#fbbf24,#f97316,#ef4444);
 
@@ -84,7 +84,7 @@ const CSS_VARS = `
     --accent-3: #38bdf8; --accent-4: #34d399;
 
     --game-bg:      rgba(230,240,255,0.6); --game-border: rgba(129,140,248,0.3);
-    --fuel-bar:     linear-gradient(90deg,#bfdbfe,#818cf8,#a78bfa);
+    --sugarlevel-bar:     linear-gradient(90deg,#bfdbfe,#818cf8,#a78bfa);
     --pressure-bar: linear-gradient(90deg,#bbf7d0,#34d399,#06b6d4);
     --boost-bar:    linear-gradient(90deg,#fde68a,#fb923c,#f43f5e);
 
@@ -121,7 +121,7 @@ const CSS_VARS = `
     --accent-3: #bf00ff; --accent-4: #ffcc00;
 
     --game-bg:      rgba(0,255,180,0.03); --game-border: rgba(0,255,180,0.25);
-    --fuel-bar:     linear-gradient(90deg,#00ffb4,#00d4ff,#bf00ff);
+    --sugarlevel-bar:     linear-gradient(90deg,#00ffb4,#00d4ff,#bf00ff);
     --pressure-bar: linear-gradient(90deg,#ffcc00,#ff6600,#ff0044);
     --boost-bar:    linear-gradient(90deg,#ffcc00,#ff6600,#ff0044);
 
@@ -444,7 +444,7 @@ const JBtn = ({ children, grad, onClick, disabled, size='md', icon, sx={} }) => 
   )
 }
 
-const ProgBar = ({ pct, cssVar='--fuel-bar', animated=false }) => (
+const ProgBar = ({ pct, cssVar='--sugarlevel-bar', animated=false }) => (
   <div style={{ background:'var(--prog-bg)', borderRadius:999, height:9, overflow:'hidden' }}>
     <div style={{
       width:`${Math.min(pct,100)}%`, height:'100%', borderRadius:999,
@@ -809,7 +809,7 @@ const JellyShooterView = ({ theme, activeBoost }) => {
                 {Math.round(sugar)}%
               </span>
             </div>
-            <ProgBar pct={sugar} cssVar="--fuel-bar" />
+            <ProgBar pct={sugar} cssVar="--sugarlevel-bar" />
             {sugar >= 90 && (
               <div style={{ marginTop:6, fontSize:10, fontWeight:900, color:'var(--accent-1)',
                 fontFamily:'var(--font-mono)', textAlign:'center', animation:'jellyWobble 0.5s ease infinite' }}>
@@ -1084,7 +1084,7 @@ const DashView = ({ theme, connected, balance, tickets, setTickets, setBalance, 
                       {r.sold}/{r.max} ({pct}%)
                     </span>
                   </div>
-                  <ProgBar pct={pct} cssVar="--fuel-bar" />
+                  <ProgBar pct={pct} cssVar="--sugarlevel-bar" />
                 </div>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:8 }}>
                   <div style={{ display:'flex', gap:8 }}>
