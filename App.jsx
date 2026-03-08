@@ -1567,7 +1567,7 @@ export default function App() {
             fontSize:11, fontWeight:700, color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>
             {isCyber
               ? '> JELLY_SHOT_RAFFLE.v3 | OP_NET | $BGS_TOKEN | GitHub_Pages'
-              : '🍬 Jelly Shot Raffle v3 · Powered by OP_NET · $BGS Token'}
+              : '🍬 Jelly Shot Raffle v3 · Powered by OP_NET · $BGS Token🍔'}
           </footer>
         </div>
 
