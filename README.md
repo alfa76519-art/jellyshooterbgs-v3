@@ -39,7 +39,7 @@ Equip NFTs from your Inventory to activate stat boosts in Jelly Shooter:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/YOUR_USERNAME/jellyshooterbgs-v3.git
+git clone https://github.com/alfa76519-art/jellyshooterbgs-v3.git
 cd jellyshooterbgs-v3
 
 # 2. Install dependencies
@@ -68,7 +68,7 @@ git init
 git add .
 git commit -m "🍬 Initial commit — Jelly Shot Raffle v3"
 git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/jellyshooterbgs-v3.git
+git remote add origin https://github.com/alfa76519-art/jellyshooterbgs-v3.git
 git push -u origin main
 ```
 
