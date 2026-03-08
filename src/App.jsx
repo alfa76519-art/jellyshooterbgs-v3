@@ -39,7 +39,7 @@ const CSS_VARS = `
 
     --game-bg:       rgba(255,220,240,0.35);
     --game-border:   rgba(244,114,182,0.3);
-    --sugarlevel-bar:      linear-gradient(90deg,#f9a8d4,#f472b6,#a78bfa);
+    --fuel-bar:      linear-gradient(90deg,#f9a8d4,#f472b6,#a78bfa);
     --pressure-bar:  linear-gradient(90deg,#86efac,#34d399,#06b6d4);
     --boost-bar:     linear-gradient(90deg,#fbbf24,#f97316,#ef4444);
 
@@ -84,7 +84,7 @@ const CSS_VARS = `
     --accent-3: #38bdf8; --accent-4: #34d399;
 
     --game-bg:      rgba(230,240,255,0.6); --game-border: rgba(129,140,248,0.3);
-    --sugarlevel-bar:     linear-gradient(90deg,#bfdbfe,#818cf8,#a78bfa);
+    --fuel-bar:     linear-gradient(90deg,#bfdbfe,#818cf8,#a78bfa);
     --pressure-bar: linear-gradient(90deg,#bbf7d0,#34d399,#06b6d4);
     --boost-bar:    linear-gradient(90deg,#fde68a,#fb923c,#f43f5e);
 
@@ -121,7 +121,7 @@ const CSS_VARS = `
     --accent-3: #bf00ff; --accent-4: #ffcc00;
 
     --game-bg:      rgba(0,255,180,0.03); --game-border: rgba(0,255,180,0.25);
-    --sugarlevel-bar:     linear-gradient(90deg,#00ffb4,#00d4ff,#bf00ff);
+    --fuel-bar:     linear-gradient(90deg,#00ffb4,#00d4ff,#bf00ff);
     --pressure-bar: linear-gradient(90deg,#ffcc00,#ff6600,#ff0044);
     --boost-bar:    linear-gradient(90deg,#ffcc00,#ff6600,#ff0044);
 
@@ -297,7 +297,7 @@ function computeActiveBoost(ownedNFTs) {
 /* ═══════════════════════════════════════════════════════════════
    DATA
 ═══════════════════════════════════════════════════════════════ */
-const  = [
+const INITIAL_RAFFLES = [
   { id:1, emoji:'🪼', name:'Jellyfish Genesis', prize:'5,000 $BGS',       price:50,  sold:73, max:100, ends:'2h 14m', hot:true  },
   { id:2, emoji:'🍑', name:'Peach Bomb',        prize:'2,500 $BGS + NFT', price:25,  sold:41, max:80,  ends:'5h 50m', hot:false },
   { id:3, emoji:'🫧', name:'Bubble Surge',      prize:'10,000 $BGS',      price:100, sold:18, max:50,  ends:'23h 00m',hot:true  },
@@ -444,7 +444,7 @@ const JBtn = ({ children, grad, onClick, disabled, size='md', icon, sx={} }) => 
   )
 }
 
-const ProgBar = ({ pct, cssVar='--sugarlevel-bar', animated=false }) => (
+const ProgBar = ({ pct, cssVar='--fuel-bar', animated=false }) => (
   <div style={{ background:'var(--prog-bg)', borderRadius:999, height:9, overflow:'hidden' }}>
     <div style={{
       width:`${Math.min(pct,100)}%`, height:'100%', borderRadius:999,
@@ -809,7 +809,7 @@ const JellyShooterView = ({ theme, activeBoost }) => {
                 {Math.round(sugar)}%
               </span>
             </div>
-            <ProgBar pct={sugar} cssVar="--sugarlevel-bar" />
+            <ProgBar pct={sugar} cssVar="--fuel-bar" />
             {sugar >= 90 && (
               <div style={{ marginTop:6, fontSize:10, fontWeight:900, color:'var(--accent-1)',
                 fontFamily:'var(--font-mono)', textAlign:'center', animation:'jellyWobble 0.5s ease infinite' }}>
@@ -906,11 +906,7 @@ const JellyShooterView = ({ theme, activeBoost }) => {
 ═══════════════════════════════════════════════════════════════ */
 const DashView = ({ theme, connected, balance, tickets, setTickets, setBalance, addToast, activeBoost }) => {
   const isCyber = theme === 'theme-cyber'
-  const [raffles, setRaffles] = useState([
-    { id:1, emoji:'💊', name:'Pill Genesis Drop', prize:'5,000 $PILL',     price:50,  sold:73, max:100, ends:'2h 14m', hot:true  },
-    { id:2, emoji:'🐈', name:'Motocats Rare #77',  prize:'2,500 $BGS + NFT', price:25,  sold:41, max:80,  ends:'5h 50m', hot:false },
-    { id:3, emoji:'🍔', name:'Burger King Pack',   prize:'10,000 $BGS',      price:100, sold:18, max:50,  ends:'23h 00m',hot:true  },
-  ]);
+  const [raffles, setRaffles] = useState(INITIAL_RAFFLES.map(r => ({ ...r })))
   const [buyId, setBuyId] = useState(null)
   const [revId, setRevId] = useState(null)
 
@@ -1088,7 +1084,7 @@ const DashView = ({ theme, connected, balance, tickets, setTickets, setBalance, 
                       {r.sold}/{r.max} ({pct}%)
                     </span>
                   </div>
-                  <ProgBar pct={pct} cssVar="--sugarlevel-bar" />
+                  <ProgBar pct={pct} cssVar="--fuel-bar" />
                 </div>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:8 }}>
                   <div style={{ display:'flex', gap:8 }}>
@@ -1567,7 +1563,7 @@ export default function App() {
             fontSize:11, fontWeight:700, color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>
             {isCyber
               ? '> JELLY_SHOT_RAFFLE.v3 | OP_NET | $BGS_TOKEN | GitHub_Pages'
-              : '🍬 Jelly Shot Raffle v3 · Powered by OP_NET · $BGS Token🍔'}
+              : '🍬 Jelly Shot Raffle v3 · Powered by OP_NET · $BGS Token'}
           </footer>
         </div>
 
