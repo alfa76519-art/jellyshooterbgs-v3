@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   applyThemeToDOM, handleThemeChange, getSavedTheme,
   TABS, THEME_OPTS, ALL_NFTS,
-  Toaster, PageBg, JellyFish, CyberBot,
+  Toaster, PageBg, Glass, JBtn, ProgBar, Badge, BoostPanel,
+  JellyFish, CyberBot, JellyCube,
   DashView, JellyShooterView, InvView,
   computeActiveBoost,
 } from './components.jsx'
