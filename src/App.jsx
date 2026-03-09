@@ -209,13 +209,31 @@ const CSS_VARS = `
 `
 
 /* ═══════════════════════════════════════════════════════════════
-   THEME SWITCHER (per spec)
+   THEME SWITCHER — apply ke <html> supaya CSS vars :root aktif
+   handleThemeChange bisa di-inject ke tombol manapun di UI.
 ═══════════════════════════════════════════════════════════════ */
-function switchTheme(mode, setTheme) {
-  const valid = ['theme-jelly', 'theme-light', 'theme-cyber']
-  if (valid.includes(mode)) setTheme(mode)
+function applyThemeToDOM(mode) {
+  // 1. Reset semua theme class dari <html> element
+  document.documentElement.classList.remove('theme-jelly', 'theme-light', 'theme-cyber')
+  // 2. Jelly = default :root, tidak perlu class tambahan
+  if (mode !== 'theme-jelly') {
+    document.documentElement.classList.add(mode)
+  }
+  // 3. Persist ke localStorage — gak reset setelah refresh
   try { localStorage.setItem('userTheme', mode) } catch (e) {}
 }
+
+// handleThemeChange — fungsi utama, inject ke tombol manapun
+function handleThemeChange(mode, setTheme) {
+  const valid = ['theme-jelly', 'theme-light', 'theme-cyber']
+  if (!valid.includes(mode)) return
+  applyThemeToDOM(mode)   // ubah DOM langsung
+  setTheme(mode)           // update React state -> re-render
+}
+
+// switchTheme alias untuk backward compat
+function switchTheme(mode, setTheme) { handleThemeChange(mode, setTheme) }
+
 function getSavedTheme() {
   try { return localStorage.getItem('userTheme') || 'theme-jelly' } catch (e) { return 'theme-jelly' }
 }
@@ -1355,7 +1373,23 @@ export default function App() {
   const [ownedNFTs, setOwnedNFTs] = useState([])   // NFTs equipped for boost
 
   const isCyber = theme === 'theme-cyber'
-  const themeClass = theme === 'theme-jelly' ? '' : theme
+
+  // Inject CSS vars into <head> once
+  useEffect(() => {
+    if (!document.getElementById('jelly-css-vars')) {
+      const s = document.createElement('style')
+      s.id = 'jelly-css-vars'
+      s.textContent = CSS_VARS
+      document.head.appendChild(s)
+    }
+    // Apply saved theme immediately on mount
+    applyThemeToDOM(theme)
+  }, [])
+
+  // Whenever theme state changes, re-apply to DOM
+  useEffect(() => {
+    applyThemeToDOM(theme)
+  }, [theme])
 
   // Compute active boost from equipped NFTs
   const activeBoost = computeActiveBoost(ownedNFTs)
@@ -1377,12 +1411,11 @@ export default function App() {
     addToast(isCyber ? '> SESSION_TERMINATED' : 'Wallet disconnected', 'error')
   }
 
-  const changeTheme = (mode) => { switchTheme(mode, setTheme); setTmOpen(false) }
+  const changeTheme = (mode) => { handleThemeChange(mode, setTheme); setTmOpen(false) }
 
   return (
     <>
-      <style>{CSS_VARS}</style>
-      <div className={`app-root ${themeClass}`}>
+      <div className="app-root">
         <PageBg />
         <Toaster toasts={toasts} />
 
