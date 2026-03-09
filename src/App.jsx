@@ -54,7 +54,7 @@ export default function App() {
 
   return (
     <>
-      <div className="app-root">
+      <div className={`app-root ${theme}`}>
         <PageBg />
         <Toaster toasts={toasts} />
 
