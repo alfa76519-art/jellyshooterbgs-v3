@@ -85,20 +85,25 @@ export const NFT_BOOSTS = {
 
 // Compute merged boost from all owned NFTs
 export function computeActiveBoost(ownedNFTs) {
-  if (!ownedNFTs.length) return null
-  const merged = { sugarRate: 0, pressureRate: 0, scoreMulti: 0, shakeBonus: 0 }
+  // 1. Pengaman Anti-Blank Putih
+  if (!ownedNFTs || !Array.isArray(ownedNFTs) || ownedNFTs.length === 0) return null;
+  
+  const merged = { sugarRate: 0, pressureRate: 0, scoreMulti: 0, shakeBonus: 0 };
+  
   // Use highest rarity as primary, stack smaller boosts
-  const order = ['Legendary', 'Epic', 'Rare', 'Uncommon']
-  const top = order.find(r => ownedNFTs.some(n => n.rarity === r))
-  const base = NFT_BOOSTS[top]
+  const order = ['Legendary', 'Epic', 'Rare', 'Uncommon'];
+  const top = order.find(r => ownedNFTs.some(n => n.rarity === r));
+  const base = NFT_BOOSTS[top];
+  
   // Stack 10% of lower rarity bonuses additively
   ownedNFTs.forEach(n => {
-    const b = NFT_BOOSTS[n.rarity]
-    merged.sugarRate    += b.sugarRate * (n.rarity === top ? 1 : 0.1)
-    merged.pressureRate += b.pressureRate * (n.rarity === top ? 1 : 0.1)
-    merged.scoreMulti   += b.scoreMulti * (n.rarity === top ? 1 : 0.1)
-    merged.shakeBonus   += b.shakeBonus * (n.rarity === top ? 1 : 0.1)
-  })
+    const b = NFT_BOOSTS[n.rarity];
+    merged.sugarRate    += b.sugarRate * (n.rarity === top ? 1 : 0.1);
+    merged.pressureRate += b.pressureRate * (n.rarity === top ? 1 : 0.1);
+    merged.scoreMulti   += b.scoreMulti * (n.rarity === top ? 1 : 0.1);
+    merged.shakeBonus   += b.shakeBonus * (n.rarity === top ? 1 : 0.1);
+  });
+  
   return {
     ...merged,
     label:  base.label,
@@ -106,7 +111,7 @@ export function computeActiveBoost(ownedNFTs) {
     icon:   base.icon,
     count:  ownedNFTs.length,
     top,
-  }
+  };
 }
 
 /* ═══════════════════════════════════════════════════════════════
