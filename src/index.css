@@ -55,14 +55,14 @@
 }
 
 /* ── THEME-LIGHT ── */
-html.theme-light {
-  --page-bg:       linear-gradient(135deg,#f8faff 0%,#eef4ff 50%,#fdf4ff 100%);
+.theme-light {
+  --page-bg: linear-gradient(135deg,#f8faff 0%,#eef4ff 50%,#fdf4ff 100%);
   --blob-1: radial-gradient(circle,#e0e7ff,#c7d2fe);
   --blob-2: radial-gradient(circle,#fce7f3,#fbcfe8);
   --blob-3: radial-gradient(circle,#d1fae5,#a7f3d0);
   --blob-4: radial-gradient(circle,#fef9c3,#fde68a);
   --blob-blur: 60px; --blob-op: 0.6;
-
+  }
   --card-bg:       rgba(255,255,255,0.82);
   --card-border:   rgba(255,255,255,1);
   --card-shadow:   0 4px 28px rgba(100,80,200,0.07),inset 0 1.5px 0 rgba(255,255,255,1);
@@ -92,14 +92,14 @@ html.theme-light {
 }
 
 /* ── THEME-CYBER ── */
-html.theme-cyber {
-  --page-bg:       linear-gradient(135deg,#010108 0%,#050514 50%,#0a0118 100%);
+.theme-cyber {
+  --page-bg: linear-gradient(135deg,#010108 0%,#050514 50%,#0a0118 100%);
   --blob-1: radial-gradient(circle,#0d0030,#1a0050);
   --blob-2: radial-gradient(circle,#001a10,#003020);
   --blob-3: radial-gradient(circle,#100020,#1e0040);
   --blob-4: radial-gradient(circle,#001530,#002050);
   --blob-blur: 30px; --blob-op: 1;
-
+  }
   --card-bg:       rgba(0,255,180,0.04);
   --card-border:   rgba(0,255,180,0.22);
   --card-shadow:   0 0 0 1px rgba(0,255,180,0.1),0 8px 40px rgba(0,0,0,0.7),inset 0 1px 0 rgba(0,255,180,0.08);
