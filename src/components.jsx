@@ -934,9 +934,8 @@ export const DashView = ({ theme, connected, balance, tickets, setTickets, setBa
 /* ═══════════════════════════════════════════════════════════════
    INVENTORY VIEW — NFT toggle for game boost
 ═══════════════════════════════════════════════════════════════ */
-export const InvView = ({ theme, connected, addToast, ownedNFTs, setOwnedNFTs }) => {
+export const InvView = ({ theme, connected, addToast, nfts, setNfts, setOwnedNFTs }) => {
   const isCyber = theme === 'theme-cyber'
-  const [nfts, setNfts] = useState(ALL_NFTS)
   const RARITY_ORDER = { Legendary:0, Epic:1, Rare:2, Uncommon:3 }
   const sorted = [...nfts].sort((a, b) => RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity])
 

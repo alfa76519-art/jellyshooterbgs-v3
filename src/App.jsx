@@ -22,6 +22,7 @@ export default function App() {
   const [tmOpen,   setTmOpen]   = useState(false)
   const [mMenu,    setMMenu]    = useState(false)
   const [ownedNFTs, setOwnedNFTs] = useState([])   // NFTs equipped for boost
+  const [nfts, setNfts] = useState(ALL_NFTS)        // persists across tab switches
 
   const isCyber = theme === 'theme-cyber'
 
@@ -226,7 +227,7 @@ export default function App() {
               addToast={addToast} activeBoost={activeBoost} />}
             {tab==='jellyShooter' && <JellyShooterView theme={theme} activeBoost={activeBoost} />}
             {tab==='inventory'    && <InvView theme={theme} connected={conn} addToast={addToast}
-              ownedNFTs={ownedNFTs} setOwnedNFTs={setOwnedNFTs} />}
+              nfts={nfts} setNfts={setNfts} setOwnedNFTs={setOwnedNFTs} />}
           </main>
 
           <footer style={{ textAlign:'center', padding:'14px 20px',
