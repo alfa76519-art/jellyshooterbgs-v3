@@ -22,7 +22,7 @@ export default function App() {
   const [tmOpen,   setTmOpen]   = useState(false)
   const [mMenu,    setMMenu]    = useState(false)
   const [ownedNFTs, setOwnedNFTs] = useState([])   // NFTs equipped for boost
-  const [nfts, setNfts] = useState(ALL_NFTS)        // persists across tab switches
+  const [nfts, setNfts] = useState(ALL_NFTS || []) // Tambahin || [] biar aman!       // persists across tab switches
 
   const isCyber = theme === 'theme-cyber'
 
