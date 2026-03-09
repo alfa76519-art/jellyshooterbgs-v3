@@ -90,7 +90,6 @@
   --toast-err: linear-gradient(135deg,#fecaca,#f87171);
   --toast-pnd: linear-gradient(135deg,#e0e7ff,#818cf8);
   --prog-bg: rgba(200,200,235,0.25); --scrollbar: rgba(129,140,248,0.35);
-}
 
 /* ── THEME-CYBER ── */
 .theme-cyber {
