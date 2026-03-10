@@ -165,7 +165,7 @@ export const BoostPanel = ({ boost, isCyber }) => {
           </div>
         </div>
         <div style={{ marginLeft:'auto', fontFamily:'var(--font-hud)', fontSize:16, color:boost.color }}>
-          ×{boost.scoreMulti.toFixed(2)}
+          ×{(boost.scoreMulti||1).toFixed(2)}
         </div>
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
@@ -297,7 +297,7 @@ export const DashView = ({ theme, connected, balance, tickets, setTickets, setBa
             <div style={{ marginBottom:12, display:'inline-flex', alignItems:'center', gap:8, background:`${activeBoost.color}18`, border:`1.5px solid ${activeBoost.color}44`, borderRadius:12, padding:'6px 14px' }}>
               <span>{activeBoost.icon}</span>
               <span style={{ fontSize:11, fontWeight:900, color:activeBoost.color, fontFamily:'var(--font-mono)' }}>
-                {activeBoost.label} — Score ×{activeBoost.scoreMulti.toFixed(2)}
+                {activeBoost.label} — Score ×{(activeBoost.scoreMulti||1).toFixed(2)}
               </span>
             </div>
           )}
@@ -401,10 +401,10 @@ export const DashView = ({ theme, connected, balance, tickets, setTickets, setBa
 ═══════════════════════════════════════════════════════════════ */
 export const JellyShooterView = ({ theme, activeBoost }) => {
   const isCyber = theme === 'theme-cyber'
-  const sugarRate    = activeBoost ? Math.min(activeBoost.sugarRate,    4) : 1
-  const pressureRate = activeBoost ? Math.min(activeBoost.pressureRate, 3) : 1
-  const scoreMulti   = activeBoost ? activeBoost.scoreMulti               : 1
-  const shakeBonus   = activeBoost ? activeBoost.shakeBonus               : 12
+  const sugarRate    = activeBoost ? Math.min(activeBoost.sugarRate    || 1, 4) : 1
+  const pressureRate = activeBoost ? Math.min(activeBoost.pressureRate || 1, 3) : 1
+  const scoreMulti   = activeBoost ? (activeBoost.scoreMulti   || 1)            : 1
+  const shakeBonus   = activeBoost ? (activeBoost.shakeBonus   || 12)           : 12
 
   const [phase,     setPhase]     = useState('idle')
   const [sugar,     setSugar]     = useState(0)
@@ -417,17 +417,25 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
   const [jellyPos,  setJellyPos]  = useState(0)
   const [thrusterOn,setThruster]  = useState(false)
 
-  const chargeRef = useRef(null)
-  const countRef  = useRef(null)
-  const flyRef    = useRef(null)
-  const sugarRef  = useRef(0)
-  const pressRef  = useRef(0)
-  const phaseRef  = useRef('idle')
-  const lastShake = useRef(0)
+  const chargeRef     = useRef(null)
+  const countRef      = useRef(null)
+  const flyRef        = useRef(null)
+  const sugarRef      = useRef(0)
+  const pressRef      = useRef(0)
+  const phaseRef      = useRef('idle')
+  const lastShake     = useRef(0)
+  const sugarRateRef  = useRef(sugarRate)
+  const pressRateRef  = useRef(pressureRate)
+  const scoreMultiRef = useRef(scoreMulti)
+  const shakeBonusRef = useRef(shakeBonus)
 
-  useEffect(() => { sugarRef.current = sugar },   [sugar])
-  useEffect(() => { pressRef.current = pressure }, [pressure])
-  useEffect(() => { phaseRef.current = phase },    [phase])
+  useEffect(() => { sugarRef.current = sugar },           [sugar])
+  useEffect(() => { pressRef.current = pressure },         [pressure])
+  useEffect(() => { phaseRef.current = phase },            [phase])
+  useEffect(() => { sugarRateRef.current  = sugarRate },   [sugarRate])
+  useEffect(() => { pressRateRef.current  = pressureRate },[pressureRate])
+  useEffect(() => { scoreMultiRef.current = scoreMulti },  [scoreMulti])
+  useEffect(() => { shakeBonusRef.current = shakeBonus },  [shakeBonus])
 
   // Shake sensor
   useEffect(() => {
@@ -438,14 +446,14 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
       const now = Date.now()
       if (f > 22 && now - lastShake.current > 800) {
         lastShake.current = now
-        setSugar(s => Math.min(s + shakeBonus, 100))
+        setSugar(s => Math.min(s + shakeBonusRef.current, 100))
         setShakeFlash(true)
         setTimeout(() => setShakeFlash(false), 700)
       }
     }
     window.addEventListener('devicemotion', handler, true)
     return () => window.removeEventListener('devicemotion', handler, true)
-  }, [shakeBonus])
+  }, [])
 
   const spawnParticle = useCallback(() => {
     const id = Date.now() + Math.random()
@@ -458,7 +466,7 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
   const launchNow = useCallback(() => {
     const power = sugarRef.current
     const press = pressRef.current
-    const final = Math.round((power*10 + press*5) * scoreMulti)
+    const final = Math.round((power*10 + press*5) * scoreMultiRef.current)
     setPhase('flying')
     let pos = 0
     const target = power * 2.8
@@ -475,7 +483,7 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
         setTimeout(() => setPhase('idle'), 2800)
       }
     }, 16)
-  }, [scoreMulti, spawnParticle])
+  }, [spawnParticle])
 
   const stopCharge = useCallback(() => {
     clearInterval(chargeRef.current)
@@ -494,12 +502,12 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
     if (phaseRef.current !== 'idle') return
     setPhase('charging'); setThruster(true)
     chargeRef.current = setInterval(() => {
-      setSugar(s => { const n = Math.min(s + 1.8*sugarRate, 100); sugarRef.current = n; return n })
-      setPressure(p => { const n = Math.min(p + 1.2*pressureRate, 100); pressRef.current = n; return n })
+      setSugar(s => { const n = Math.min(s + 1.8*sugarRateRef.current, 100); sugarRef.current = n; return n })
+      setPressure(p => { const n = Math.min(p + 1.2*pressRateRef.current, 100); pressRef.current = n; return n })
       spawnParticle()
       if (sugarRef.current >= 100) stopCharge()
     }, 50)
-  }, [sugarRate, pressureRate, spawnParticle, stopCharge])
+  }, [spawnParticle, stopCharge])
 
   useEffect(() => {
     const kd = e => { if (e.code==='Space') { e.preventDefault(); startCharge() } }
@@ -529,7 +537,7 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
             </p>
             {activeBoost && (
               <div style={{ marginTop:6, display:'inline-flex', alignItems:'center', gap:6, background:`${activeBoost.color}18`, border:`1px solid ${activeBoost.color}44`, borderRadius:999, padding:'4px 12px', fontSize:11, fontWeight:900, color:activeBoost.color, fontFamily:'var(--font-mono)' }}>
-                {activeBoost.icon} Score ×{activeBoost.scoreMulti.toFixed(2)} active
+                {activeBoost.icon} Score ×{(activeBoost.scoreMulti||1).toFixed(2)} active
               </div>
             )}
           </div>
@@ -579,7 +587,7 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
           {phase==='landed' && (
             <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10, zIndex:10, backdropFilter:'blur(6px)', borderRadius:'var(--card-radius)' }}>
               <div style={{ fontFamily:'var(--font-hud)', fontSize:40, color:'var(--accent-1)', textShadow:'0 0 30px var(--jelly-glow)' }}>{score} pts!</div>
-              {activeBoost && <div style={{ fontSize:13, fontWeight:900, color:activeBoost.color, fontFamily:'var(--font-mono)' }}>{activeBoost.icon} ×{activeBoost.scoreMulti.toFixed(2)} applied</div>}
+              {activeBoost && <div style={{ fontSize:13, fontWeight:900, color:activeBoost.color, fontFamily:'var(--font-mono)' }}>{activeBoost.icon} ×{(activeBoost.scoreMulti||1).toFixed(2)} applied</div>}
               <div style={{ fontFamily:'var(--font-hud)', fontSize:18, color:'var(--text-muted)' }}>{tierLabel}</div>
             </div>
           )}
@@ -663,7 +671,7 @@ export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, ad
     const newNfts = safeNfts.map(n => n.id===nft.id ? {...n, equipped:!n.equipped} : n)
     setNfts(newNfts)
     setOwnedNFTs(newNfts.filter(n => n.equipped && n.owned))
-    addToast(`${nft.name} ${nft.equipped ? 'Unequipped' : 'Equipped'}!`, 'success')
+    addToast(nft.equipped ? `${nft.name} unequipped` : `${nft.name} equipped! 🚀`, nft.equipped?'error':'success')
   }
 
   return (
@@ -702,7 +710,7 @@ export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, ad
               </div>
             </div>
             <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-              {[{l:'Sugar',v:`×${activeBoost.sugarRate.toFixed(2)}`},{l:'Score',v:`×${activeBoost.scoreMulti.toFixed(2)}`},{l:'Shake',v:`+${Math.round(activeBoost.shakeBonus)}`}].map(s => (
+              {[{l:'Sugar',v:`×${activeBoost.sugarRate.toFixed(2)}`},{l:'Score',v:`×${(activeBoost.scoreMulti||1).toFixed(2)}`},{l:'Shake',v:`+${Math.round(activeBoost.shakeBonus)}`}].map(s => (
                 <div key={s.l} style={{ textAlign:'center', background:`${activeBoost.color}14`, border:`1px solid ${activeBoost.color}33`, borderRadius:10, padding:'6px 12px' }}>
                   <div style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>{s.l}</div>
                   <div style={{ fontFamily:'var(--font-hud)', fontSize:16, color:activeBoost.color }}>{s.v}</div>
@@ -740,7 +748,7 @@ export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, ad
                     <h4 style={{ fontFamily:'var(--font-hud)', fontSize:13, color:'var(--text-primary)', marginBottom:3 }}>{nft.name}</h4>
                     <p style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700, fontFamily:'var(--font-mono)' }}>{nft.trait}</p>
                   </div>
-                  <div style={{ background:`${nft.rc}22`, color:nft.rc, padding:'4px 10px', borderRadius:999, fontSize:10, fontWeight:900, fontFamily:'var(--font-mono)', textTransform:'uppercase' }}>{nft.rarity}</div>
+                  <Badge label={nft.rarity} color={nft.rc}/>
                 </div>
                 {nft.owned && (
                   <div style={{ marginBottom:10, padding:'8px 10px', borderRadius:10, background:`${nft.rc}10`, border:`1px solid ${nft.rc}22` }}>
