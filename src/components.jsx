@@ -122,18 +122,167 @@ export const BoostPanel = ({ boost, isCyber }) => {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   4. VIEWS
+   [6] DASHBOARD VIEW — raffles, buy ticket, reveal winner, stats
 ═══════════════════════════════════════════════════════════════ */
-export const DashView = ({ balance, connected, activeBoost, theme }) => (
-  <div className="panel-enter" style={{ display:'flex', flexDirection:'column', gap:20 }}>
-    <Glass style={{ padding:30 }}>
-      <h2 style={{ fontFamily:'var(--font-hud)' }}>{theme==='theme-cyber'?'DASHBOARD.EXE':'Dashboard'}</h2>
-      <div style={{ fontSize:32, fontWeight:900, color:'var(--accent-1)' }}>{balance.toLocaleString()} $BGS</div>
-      <p style={{ fontSize:12, opacity:0.7 }}>{connected ? '● Wallet Linked' : '○ Connect Wallet'}</p>
-    </Glass>
-    {activeBoost && <BoostPanel boost={activeBoost} isCyber={theme==='theme-cyber'} />}
-  </div>
-)
+export const DashView = ({ theme, connected, balance, tickets, setTickets, setBalance, addToast, activeBoost }) => {
+  const isCyber = theme === 'theme-cyber'
+  const [raffles, setRaffles] = useState(INITIAL_RAFFLES.map(r => ({...r})))
+  const [buyId, setBuyId] = useState(null)
+  const [revId, setRevId] = useState(null)
+
+  const buy = async r => {
+    if (!connected)        { addToast('Connect wallet first!', 'error'); return }
+    if (balance < r.price) { addToast('Not enough $BGS!', 'error'); return }
+    setBuyId(r.id)
+    addToast(isCyber ? '> SIGNING tx...' : 'Signing on OPWallet…', 'pending')
+    await new Promise(x => setTimeout(x, 900))
+    addToast(isCyber ? '> BROADCASTING...' : 'Broadcasting to OP_NET…', 'pending')
+    await new Promise(x => setTimeout(x, 1100))
+    setBalance(b => b - r.price)
+    setTickets(t => ({ ...t, [r.id]: (t[r.id]||0)+1 }))
+    setRaffles(rs => rs.map(x => x.id===r.id ? {...x, sold:Math.min(x.sold+1,x.max)} : x))
+    addToast('🎟️ Ticket confirmed!', 'success')
+    setBuyId(null)
+  }
+
+  const reveal = async id => {
+    if (!connected) { addToast('Connect wallet first!', 'error'); return }
+    setRevId(id)
+    addToast(isCyber ? '> REQUESTING VRF...' : 'Requesting VRF entropy…', 'pending')
+    await new Promise(x => setTimeout(x, 2200))
+    const w = ['bc1p...a3f9','bc1p...7dk2','bc1p...z0q8'][Math.floor(Math.random()*3)]
+    addToast(`🏆 Winner: ${w}`, 'success')
+    setRevId(null)
+  }
+
+  const totalTickets = Object.values(tickets).reduce((a,b) => a+b, 0)
+  const stats = [
+    { l: isCyber?'PRIZE_POOL':'Prize Pool',      v:'17,500 $BGS', e:'💎' },
+    { l: isCyber?'ACTIVE_LIVE':'Active Raffles',  v:'3 Live',      e:'🔴' },
+    { l: isCyber?'MY_TICKETS':'My Tickets',       v: totalTickets, e:'🎟️' },
+    { l: isCyber?'PLAYERS':'Players Online',      v:'214',          e:'🪼' },
+  ]
+
+  return (
+    <div className="panel-enter" style={{ display:'flex', flexDirection:'column', gap:20 }}>
+      {/* Hero */}
+      <Glass className="fup" style={{ padding:'26px 30px', position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', right:-10, top:-10, opacity:0.8 }}>
+          {isCyber ? <CyberBot size={88} style={{ animation:'floatIdle 3.5s ease-in-out infinite' }}/> : <JellyFish size={88} className="float-idle"/>}
+        </div>
+        <div style={{ position:'absolute', right:100, bottom:-8, opacity:0.6 }}>
+          <JellyCube size={50} style={{ animation:'floatIdle 4s ease-in-out infinite', animationDelay:'1s' }}/>
+        </div>
+        <div style={{ maxWidth:480 }}>
+          <p style={{ fontSize:11, fontWeight:900, textTransform:'uppercase', letterSpacing:'.1em', color:'var(--accent-1)', marginBottom:8, fontFamily:'var(--font-mono)' }}>
+            {isCyber ? '> OP_NET.PROTOCOL · $BGS.TOKEN' : '🍬 OP_NET · Powered by $BGS Token'}
+          </p>
+          <h1 style={{ fontFamily:'var(--font-hud)', fontSize:'clamp(1.4rem,3.5vw,2rem)', lineHeight:1.2, color:'var(--text-primary)', marginBottom:10 }}>
+            {isCyber ? 'WIN.SYS: Jelly_Raffle.exe' : 'Win Sweet Prizes with Jelly Shot Raffle 🪼'}
+          </h1>
+          {activeBoost && (
+            <div style={{ marginBottom:12, display:'inline-flex', alignItems:'center', gap:8, background:`${activeBoost.color}18`, border:`1.5px solid ${activeBoost.color}44`, borderRadius:12, padding:'6px 14px' }}>
+              <span>{activeBoost.icon}</span>
+              <span style={{ fontSize:11, fontWeight:900, color:activeBoost.color, fontFamily:'var(--font-mono)' }}>
+                {activeBoost.label} — Score ×{activeBoost.scoreMulti.toFixed(2)}
+              </span>
+            </div>
+          )}
+          <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+            <JBtn icon="🎰" onClick={() => addToast('Scroll down to join! 🎟️','success')}>
+              {isCyber ? 'JOIN_RAFFLE.EXE' : 'Join Now'}
+            </JBtn>
+          </div>
+        </div>
+      </Glass>
+
+      {/* Stats */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))', gap:12 }}>
+        {stats.map((s,i) => (
+          <Glass key={i} className="fup" style={{ padding:'16px 18px', animationDelay:`${i*0.07}s` }}>
+            <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:7 }}>
+              <span style={{ fontSize:17 }}>{s.e}</span>
+              <span style={{ fontSize:9.5, fontWeight:900, textTransform:'uppercase', letterSpacing:'.08em', color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>{s.l}</span>
+            </div>
+            <div style={{ fontSize:20, fontWeight:900, fontFamily:'var(--font-hud)', color:'var(--accent-1)' }}>{s.v}</div>
+          </Glass>
+        ))}
+      </div>
+
+      {/* Balance */}
+      {connected && (
+        <Glass className="fup" style={{ padding:'20px 26px', border:'1.5px solid var(--accent-1)', boxShadow:'var(--card-shadow),0 0 24px var(--btn-glow)' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div>
+              <p style={{ fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'.12em', color:'var(--text-muted)', marginBottom:8, fontFamily:'var(--font-mono)' }}>
+                {isCyber ? 'WALLET.BALANCE' : 'Your $BGS Balance'}
+              </p>
+              <p style={{ fontFamily:'var(--font-hud)', fontSize:36, lineHeight:1, color:'var(--accent-1)' }}>
+                {balance.toLocaleString()}
+                <span style={{ fontFamily:'var(--font-body)', fontSize:14, fontWeight:700, color:'var(--text-muted)' }}> $BGS</span>
+              </p>
+            </div>
+            {isCyber ? <CyberBot size={60} style={{ animation:'floatIdle 3s ease-in-out infinite' }}/> : <JellyFish size={60} className="float-idle"/>}
+          </div>
+        </Glass>
+      )}
+
+      {/* Raffles */}
+      <div>
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
+          <h2 style={{ fontFamily:'var(--font-hud)', fontSize:19, color:'var(--text-primary)' }}>
+            {isCyber ? 'LIVE_RAFFLES.SYS' : 'Live Raffles'}
+          </h2>
+          <span style={{ background:'var(--accent-1)', borderRadius:999, padding:'3px 12px', fontSize:10, fontWeight:900, color: isCyber?'#000':'#fff' }}>🔴 LIVE</span>
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+          {raffles.map((r,idx) => {
+            const pct = Math.round((r.sold/r.max)*100)
+            const myC = tickets[r.id]||0
+            const full = r.sold >= r.max
+            return (
+              <Glass key={r.id} className="fup" style={{ padding:'20px 22px', position:'relative', overflow:'hidden', animationDelay:`${idx*0.1}s` }}>
+                <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background:'linear-gradient(90deg,var(--accent-1),var(--accent-2),var(--accent-3))' }}/>
+                {r.hot && <div style={{ position:'absolute', top:14, right:14 }}><Badge label={isCyber?'HOT_ITEM':'🔥 Hot'} color="var(--accent-1)"/></div>}
+                <div style={{ display:'flex', gap:14, alignItems:'center', marginBottom:14 }}>
+                  <div style={{ width:50, height:50, borderRadius:isCyber?6:18, background:'linear-gradient(135deg,var(--accent-1),var(--accent-2))', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, flexShrink:0 }}>{r.emoji}</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+                      <h3 style={{ fontFamily:'var(--font-hud)', fontSize:15, color:'var(--text-primary)', marginBottom:2 }}>
+                        {isCyber ? r.name.toUpperCase().replace(' ','_') : r.name}
+                      </h3>
+                      <div style={{ background:'linear-gradient(135deg,var(--accent-1),var(--accent-2))', borderRadius:isCyber?4:12, padding:'5px 14px', color:isCyber?'#000':'#fff', fontSize:12, fontWeight:900 }}>{r.prize}</div>
+                    </div>
+                    <span style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700, fontFamily:'var(--font-mono)' }}>⏰ {r.ends}</span>
+                  </div>
+                </div>
+                <div style={{ marginBottom:14 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', marginBottom:7 }}>
+                    <span style={{ fontSize:11, color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>{isCyber?'TICKET.SOLD':'Tickets Sold'}</span>
+                    <span style={{ fontSize:11, fontWeight:900, color:'var(--accent-1)', fontFamily:'var(--font-mono)' }}>{r.sold}/{r.max} ({pct}%)</span>
+                  </div>
+                  <ProgBar pct={pct}/>
+                </div>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:8 }}>
+                  <div style={{ display:'flex', gap:8 }}>
+                    <JBtn onClick={() => buy(r)} disabled={buyId===r.id||full} icon={buyId===r.id?'⏳':full?'🔒':'🎟️'} size="sm">
+                      {buyId===r.id?(isCyber?'TX_PENDING':'Buying…'):full?(isCyber?'SOLD_OUT':'Sold Out'):`${r.price} $BGS`}
+                    </JBtn>
+                    <JBtn grad="linear-gradient(135deg,var(--accent-2),var(--accent-3))" onClick={() => reveal(r.id)} disabled={revId===r.id} icon={revId===r.id?'⏳':'🏆'} size="sm">
+                      {revId===r.id?(isCyber?'DRAWING':'Drawing…'):(isCyber?'REVEAL.WIN':'Reveal Winner')}
+                    </JBtn>
+                  </div>
+                  {myC>0 && <span style={{ fontSize:12, fontWeight:900, color:'var(--accent-1)', fontFamily:'var(--font-mono)', background:'rgba(255,255,255,0.08)', borderRadius:99, padding:'4px 12px', border:'1px solid var(--game-border)' }}>🎟️ YOU: {myC}</span>}
+                </div>
+              </Glass>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 
 /* ═══════════════════════════════════════════════════════════════
    JELLY SHOOTER VIEW — Full Game Engine
@@ -386,65 +535,157 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
   )
 }
 /* ═══════════════════════════════════════════════════════════════
-   INVENTORY VIEW bentar fix satu persatu
+   [8] INVENTORY VIEW — NFT list, equip toggle, boost panel, list/transfer demo
 ═══════════════════════════════════════════════════════════════ */
-
 export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, addToast }) => {
-  const isCyber = theme === 'theme-cyber'
-  const safeNfts = Array.isArray(nfts) ? nfts : []
-  const equipped = safeNfts.filter(n => n.equipped && n.owned)
+  const isCyber   = theme === 'theme-cyber'
+  const safeNfts  = Array.isArray(nfts) ? nfts : []
+  const RARITY_ORDER = { Legendary:0, Epic:1, Rare:2, Uncommon:3 }
+  const sorted    = [...safeNfts].sort((a,b) => RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity])
+  const equipped  = safeNfts.filter(n => n.equipped && n.owned)
   const activeBoost = computeActiveBoost(equipped)
 
   const toggleEquip = (nft) => {
-    const newNfts = safeNfts.map(n => n.id === nft.id ? { ...n, equipped: !n.equipped } : n)
+    if (!nft.owned) return
+    const newNfts = safeNfts.map(n => n.id===nft.id ? {...n, equipped:!n.equipped} : n)
     setNfts(newNfts)
     setOwnedNFTs(newNfts.filter(n => n.equipped && n.owned))
-    addToast(`${nft.name} Updated!`, 'success')
+    addToast(nft.equipped ? `${nft.name} unequipped` : `${nft.name} equipped! 🚀`, nft.equipped?'error':'success')
   }
 
   return (
     <div className="panel-enter" style={{ display:'flex', flexDirection:'column', gap:18 }}>
-      <Glass style={{ padding:'20px 26px', background: isCyber ? 'rgba(0,255,255,0.05)' : 'rgba(255,255,255,0.5)' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+      <Glass className="fup" style={{ padding:'20px 26px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
           <div>
-            <h2 style={{ fontFamily:'var(--font-hud)', fontSize:22 }}>{isCyber ? 'VAULT.SYS' : '🎁 My Motocats'}</h2>
-            <p style={{ fontSize:11, opacity:0.7 }}>{equipped.length} / {safeNfts.length} Motocats Equipped</p>
+            <h2 style={{ fontFamily:'var(--font-hud)', fontSize:22, color:'var(--text-primary)', marginBottom:4 }}>
+              {isCyber ? 'ASSET_VAULT.SYS' : '🎁 My Motocats'}
+            </h2>
+            <p style={{ fontSize:12, color:'var(--text-muted)', fontWeight:700, fontFamily:'var(--font-mono)' }}>
+              {isCyber ? '> Equip NFTs → activate Shooter boost' : 'Equip NFTs untuk boost Jelly Shooter! 🚀'}
+            </p>
           </div>
-          {activeBoost && (
-            <div style={{ textAlign:'right' }}>
-               <span style={{ fontSize:10, fontWeight:900, color:'var(--text-muted)' }}>CURRENT_BOOST</span>
-               <div style={{ fontFamily:'var(--font-hud)', fontSize:24, color:activeBoost.color }}>×{activeBoost.scoreMulti.toFixed(2)}</div>
+          <div style={{ display:'flex', gap:16 }}>
+            <div style={{ textAlign:'center' }}>
+              <div style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>OWNED</div>
+              <div style={{ fontFamily:'var(--font-hud)', fontSize:24, color:'var(--text-primary)' }}>{safeNfts.filter(n=>n.owned).length}</div>
             </div>
-          )}
+            <div style={{ textAlign:'center' }}>
+              <div style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>EQUIPPED</div>
+              <div style={{ fontFamily:'var(--font-hud)', fontSize:24, color:'var(--accent-4)' }}>{equipped.length}</div>
+            </div>
+          </div>
         </div>
       </Glass>
 
-      {activeBoost && <BoostPanel boost={activeBoost} isCyber={isCyber} />}
-
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:14 }}>
-        {safeNfts.map((nft) => (
-          <Glass key={nft.id} style={{ 
-            padding:18, 
-            border:nft.equipped ? `2px solid ${nft.rc}` : `1.5px solid ${nft.rc}44`,
-            boxShadow: nft.equipped ? `0 0 20px ${nft.rc}33` : 'none',
-            position:'relative',
-            opacity: nft.owned ? 1 : 0.5
-          }}>
-            <div style={{ position:'absolute', top:10, right:12, fontSize:10, fontWeight:900, color:nft.rc }}>{nft.rarity}</div>
-            <div style={{ width:'100%', aspectRatio:'1', background:`${nft.rc}15`, borderRadius:18, display:'flex', alignItems:'center', justifyContent:'center', fontSize:54, marginBottom:14 }}>{nft.emoji}</div>
-            <div style={{ fontWeight:800, textAlign:'center', marginBottom:12, fontSize:15 }}>{nft.name}</div>
-            
-            <div style={{ display:'flex', gap:6, marginBottom:12, justifyContent:'center' }}>
-               <div style={{ fontSize:9, background:'rgba(0,0,0,0.1)', padding:'3px 6px', borderRadius:6, fontWeight:700 }}>🚀 {NFT_BOOSTS[nft.rarity].sugarRate}x</div>
-               <div style={{ fontSize:9, background:'rgba(0,0,0,0.1)', padding:'3px 6px', borderRadius:6, fontWeight:700 }}>💎 {NFT_BOOSTS[nft.rarity].scoreMulti}x</div>
+      {activeBoost && (
+        <Glass className="fup" style={{ padding:'16px 22px', border:`1.5px solid ${activeBoost.color}66`, boxShadow:`0 0 24px ${activeBoost.color}33,var(--card-shadow)` }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <span style={{ fontSize:28 }}>{activeBoost.icon}</span>
+              <div>
+                <div style={{ fontFamily:'var(--font-mono)', fontWeight:900, fontSize:13, color:activeBoost.color }}>{activeBoost.label} ACTIVE</div>
+                <div style={{ fontSize:11, color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>{equipped.length} NFT{equipped.length>1?'s':''} equipped</div>
+              </div>
             </div>
+            <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+              {[{l:'Sugar',v:`×${activeBoost.sugarRate.toFixed(2)}`},{l:'Score',v:`×${activeBoost.scoreMulti.toFixed(2)}`},{l:'Shake',v:`+${Math.round(activeBoost.shakeBonus)}`}].map(s => (
+                <div key={s.l} style={{ textAlign:'center', background:`${activeBoost.color}14`, border:`1px solid ${activeBoost.color}33`, borderRadius:10, padding:'6px 12px' }}>
+                  <div style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>{s.l}</div>
+                  <div style={{ fontFamily:'var(--font-hud)', fontSize:16, color:activeBoost.color }}>{s.v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Glass>
+      )}
 
-            <JBtn onClick={() => toggleEquip(nft)} sx={{ width:'100%' }}>
-              {nft.equipped ? 'UNEQUIP' : 'EQUIP'}
-            </JBtn>
-          </Glass>
-        ))}
-      </div>
+      {!connected ? (
+        <Glass className="fup" style={{ padding:52, textAlign:'center' }}>
+          {isCyber ? <CyberBot size={80} style={{ margin:'0 auto 16px', display:'block' }}/> : <JellyFish size={80} className="float-idle" style={{ margin:'0 auto 16px', display:'block' }}/>}
+          <h3 style={{ fontFamily:'var(--font-hud)', fontSize:20, color:'var(--text-primary)', marginBottom:8 }}>
+            {isCyber ? 'CONNECT_WALLET_REQUIRED' : 'Connect Wallet to View'}
+          </h3>
+        </Glass>
+      ) : (
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:14 }}>
+          {sorted.map((nft,i) => {
+            const boostDef = NFT_BOOSTS[nft.rarity]
+            return (
+              <div key={nft.id} className={`glass fup ${nft.glow}`} style={{ padding:18, overflow:'hidden', position:'relative', animationDelay:`${i*0.08}s`, border:nft.equipped?`2.5px solid ${nft.rc}`:`1.5px solid ${nft.rc}44`, borderRadius:'var(--card-radius)', opacity:nft.owned?1:0.45, transition:'transform 0.4s cubic-bezier(0.68,-0.55,0.265,1.55)', boxShadow:nft.equipped?`0 0 24px ${nft.rc}55,var(--card-shadow)`:undefined }}
+                onMouseEnter={e => { if(nft.owned) e.currentTarget.style.transform='translateY(-7px) scale(1.03)' }}
+                onMouseLeave={e => e.currentTarget.style.transform='none'}>
+                <div style={{ position:'absolute', top:0, left:0, right:0, height:4, background:`linear-gradient(90deg,${nft.rc},${nft.rc}88)`, borderRadius:'24px 24px 0 0' }}/>
+                {nft.equipped && (
+                  <div style={{ position:'absolute', top:12, right:12, background:`linear-gradient(135deg,${nft.rc},${nft.rc}aa)`, borderRadius:999, padding:'3px 10px', fontSize:9, fontWeight:900, color:'#fff', fontFamily:'var(--font-mono)', textTransform:'uppercase' }}>
+                    {isCyber?'EQUIPPED':'⚡ Equipped'}
+                  </div>
+                )}
+                <div style={{ width:'100%', aspectRatio:'1', borderRadius:18, background:`linear-gradient(135deg,${nft.rc}44,${nft.rc}aa)`, border:`1.5px solid ${nft.rc}66`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:52, marginBottom:14 }}>{nft.emoji}</div>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:6 }}>
+                  <div>
+                    <h4 style={{ fontFamily:'var(--font-hud)', fontSize:13, color:'var(--text-primary)', marginBottom:3 }}>{nft.name}</h4>
+                    <p style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700, fontFamily:'var(--font-mono)' }}>{nft.trait}</p>
+                  </div>
+                  <Badge label={nft.rarity} color={nft.rc}/>
+                </div>
+                {nft.owned && (
+                  <div style={{ marginBottom:10, padding:'8px 10px', borderRadius:10, background:`${nft.rc}10`, border:`1px solid ${nft.rc}22` }}>
+                    <div style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', color:nft.rc, fontFamily:'var(--font-mono)', marginBottom:5 }}>{isCyber?'BOOST_STATS':'⚡ Boost Stats'}</div>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:3 }}>
+                      {[{k:'Sugar',v:`×${boostDef.sugarRate}`},{k:'Score',v:`×${boostDef.scoreMulti}`}].map(s => (
+                        <div key={s.k} style={{ fontSize:10, fontWeight:800, color:'var(--text-primary)', fontFamily:'var(--font-mono)' }}>
+                          <span style={{ color:'var(--text-muted)' }}>{s.k}: </span>{s.v}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* ── NFT ACTION BUTTONS ── */}
+                <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                  {/* Row 1: Equip / Win */}
+                  <div style={{ display:'flex', gap:6 }}>
+                    {nft.owned ? (
+                      <JBtn grad={nft.equipped?'linear-gradient(135deg,rgba(200,180,220,0.2),rgba(200,180,220,0.05))':`linear-gradient(135deg,${nft.rc},${nft.rc}bb)`} onClick={() => toggleEquip(nft)} size="xs" sx={nft.equipped?{color:'var(--text-primary)'}:{}}>
+                        {nft.equipped?(isCyber?'UNEQUIP':'Unequip'):(isCyber?'EQUIP':'⚡ Equip')}
+                      </JBtn>
+                    ) : (
+                      <JBtn grad="rgba(150,150,160,0.15)" size="xs" disabled sx={{ color:'var(--text-muted)', fontSize:10 }}>
+                        {isCyber?'WIN_TO_UNLOCK':'Win in Raffle'}
+                      </JBtn>
+                    )}
+                  </div>
+                  {/* Row 2: List & Transfer (Demo Only) */}
+                  {nft.owned && (
+                    <div style={{ display:'flex', gap:6 }}>
+                      <JBtn
+                        grad="rgba(150,150,160,0.12)"
+                        size="xs" disabled
+                        sx={{ color:'var(--text-muted)', fontSize:9, flex:1, justifyContent:'center' }}
+                        icon="📋">
+                        {isCyber?'LIST.EXE':'List'} <span style={{fontSize:8,opacity:0.6}}>demo</span>
+                      </JBtn>
+                      <JBtn
+                        grad="rgba(150,150,160,0.12)"
+                        size="xs" disabled
+                        sx={{ color:'var(--text-muted)', fontSize:9, flex:1, justifyContent:'center' }}
+                        icon="↗">
+                        {isCyber?'TRANSFER.EXE':'Transfer'} <span style={{fontSize:8,opacity:0.6}}>demo</span>
+                      </JBtn>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      <Glass className="fup" style={{ padding:'14px 20px', textAlign:'center' }}>
+        <p style={{ fontSize:12, color:'var(--text-muted)', fontWeight:700, fontFamily:'var(--font-mono)' }}>
+          {isCyber?'> Stack multiple NFTs for additive bonus':'💡 Equip multiple NFTs untuk stacked bonuses!'}
+        </p>
+      </Glass>
     </div>
   )
 }
