@@ -54,7 +54,7 @@
 }
 
 /* ── THEME-LIGHT ── */
-.theme-light {
+html.theme-light {
   --page-bg:       linear-gradient(135deg,#f8faff 0%,#eef4ff 50%,#fdf4ff 100%);
   --blob-1: radial-gradient(circle,#e0e7ff,#c7d2fe);
   --blob-2: radial-gradient(circle,#fce7f3,#fbcfe8);
@@ -91,7 +91,7 @@
 }
 
 /* ── THEME-CYBER ── */
-.theme-cyber {
+html.theme-cyber {
   --page-bg:       linear-gradient(135deg,#010108 0%,#050514 50%,#0a0118 100%);
   --blob-1: radial-gradient(circle,#0d0030,#1a0050);
   --blob-2: radial-gradient(circle,#001a10,#003020);
