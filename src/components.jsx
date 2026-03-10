@@ -63,37 +63,6 @@ export const NFT_BOOSTS = {
   Uncommon:  { sugarRate: 1.15,pressureRate: 1.05,scoreMulti: 1.1, shakeBonus: 12, label: 'UNCOMMON BOOST',  color: '#ec4899', icon: '🩷', perks: ['1.15× Sugar Rate', '1.1× Score', 'Base Shake'] },
 }
 
-export function computeActiveBoost(ownedNFTs) {
-  const safeOwned = Array.isArray(ownedNFTs) ? ownedNFTs : []
-  if (safeOwned.length === 0) return null
-  const merged = { sugarRate: 0, pressureRate: 0, scoreMulti: 0, shakeBonus: 0 }
-  const order = ['Legendary', 'Epic', 'Rare', 'Uncommon']
-  const top = order.find(r => safeOwned.some(n => n.rarity === r)) || 'Uncommon'
-  const base = NFT_BOOSTS[top] || NFT_BOOSTS['Uncommon']
-  safeOwned.forEach(n => {
-    const b = NFT_BOOSTS[n.rarity] || NFT_BOOSTS['Uncommon']
-    const isTop = n.rarity === top
-    merged.sugarRate    += b.sugarRate    * (isTop ? 1 : 0.1)
-    merged.pressureRate += b.pressureRate * (isTop ? 1 : 0.1)
-    merged.scoreMulti   += b.scoreMulti   * (isTop ? 1 : 0.1)
-    merged.shakeBonus   += b.shakeBonus   * (isTop ? 1 : 0.1)
-  })
-  return { ...merged, label: base.label, color: base.color, icon: base.icon, count: safeOwned.length, top }
-}
-
-  const safeOwned = Array.isArray(ownedNFTs) ? ownedNFTs : []
-  if (safeOwned.length === 0) return null
-  const order = ['Legendary', 'Epic', 'Rare', 'Uncommon']
-  const top = order.find(r => safeOwned.some(n => n.rarity === r)) || 'Uncommon'
-  const base = NFT_BOOSTS[top] || NFT_BOOSTS['Uncommon']
-  const merged = { sugarRate: 0, scoreMulti: 0, shakeBonus: 0 }
-  safeOwned.forEach(n => {
-    const b = NFT_BOOSTS[n.rarity] || NFT_BOOSTS['Uncommon']
-    const isTop = n.rarity === top
-    merged.sugarRate += b.sugarRate * (isTop ? 1 : 0.1)
-    merged.scoreMulti += b.scoreMulti * (isTop ? 1 : 0.1)
-    merged.shakeBonus += b.shakeBonus * (isTop ? 1 : 0.1)
-  })
   return { ...merged, label: base.label, color: base.color, icon: base.icon, count: safeOwned.length, top }
 
 /* ═══════════════════════════════════════════════════════════════
