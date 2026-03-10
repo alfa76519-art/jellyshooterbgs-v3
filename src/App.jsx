@@ -50,16 +50,6 @@ export default function App() {
     addToast(isCyber ? '> SESSION_TERMINATED' : 'Wallet disconnected', 'error')
   }
 
-  // 1. Taruh addToast di sini (di luar fungsi lain tapi di dalam export App)
-const addToast = (msg) => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, msg }]);
-    setTimeout(() => {
-        setToasts(prev => prev.filter(t => t.id !== id));
-    }, 3000);
-};
-
-// 2. Baru kemudian fungsi changeTheme tinggal manggil dia
 const changeTheme = (mode) => {
     setTheme(mode);
     localStorage.setItem('theme', mode);
