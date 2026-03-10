@@ -127,14 +127,85 @@ export const DashView = ({ balance, connected, activeBoost, theme }) => (
   </div>
 )
 
-export const JellyShooterView = ({ theme, activeBoost }) => (
-  <div className="panel-enter">
-    <Glass style={{ padding:40, textAlign:'center', minHeight:350 }}>
-      <div style={{ marginBottom:30 }}>{theme==='theme-cyber' ? <CyberBot size={85} /> : <JellyFish size={85} className="float-idle" />}</div>
-      <JBtn icon="⚡">READY TO LAUNCH</JBtn>
-    </Glass>
-  </div>
-)
+export const JellyShooterView = ({ theme, activeBoost }) => {
+  const isCyber = theme === 'theme-cyber'
+  const sugarRate    = activeBoost ? Math.min(activeBoost.sugarRate, 4) : 1
+  const scoreMulti   = activeBoost ? activeBoost.scoreMulti : 1
+  const shakeBonus   = activeBoost ? activeBoost.shakeBonus : 12
+
+  const [phase, setPhase] = useState('idle')
+  const [sugar, setSugar] = useState(0)
+  const [score, setScore] = useState(0)
+  const [jellyPos, setJellyPos] = useState(0)
+  
+  const launchRef = useRef(null)
+
+  const stopCharge = () => {
+    if (phase !== 'charging') return
+    setPhase('flying')
+    let pos = 0
+    const target = sugar * 2.5
+    
+    launchRef.current = setInterval(() => {
+      pos += 10
+      setJellyPos(pos)
+      if (pos >= target) {
+        clearInterval(launchRef.current)
+        setScore(Math.round(sugar * scoreMulti))
+        setPhase('landed')
+        setTimeout(() => {
+          setPhase('idle')
+          setJellyPos(0)
+          setSugar(0)
+        }, 3000)
+      }
+    }, 16)
+  }
+
+  const startCharge = () => {
+    if (phase !== 'idle') return
+    setPhase('charging')
+  }
+
+  useEffect(() => {
+    if (phase === 'charging') {
+      const timer = setInterval(() => {
+        setSugar(s => Math.min(s + (1.5 * sugarRate), 100))
+      }, 50)
+      return () => clearInterval(timer)
+    }
+  }, [phase, sugarRate])
+
+  return (
+    <div className="panel-enter">
+      <Glass style={{ padding:40, textAlign:'center', minHeight:400, position:'relative' }}>
+        <div style={{ marginBottom:20 }}>
+          <div style={{ fontSize:14, fontWeight:900, color:'var(--accent-1)', marginBottom:10 }}>SCORE: {score}</div>
+          <ProgBar pct={sugar} />
+        </div>
+
+        <div style={{ position:'relative', height:200, overflow:'hidden', marginBottom:20 }}>
+           <div style={{ position:'absolute', bottom: jellyPos, left:'50%', transform:'translateX(-50%)', transition: phase==='flying'?'none':'bottom 0.5s' }}>
+              {isCyber ? <CyberBot size={80} /> : <JellyFish size={80} className={phase==='charging'?'float-idle':''} />}
+           </div>
+        </div>
+
+        {phase === 'landed' && <div style={{ fontSize:24, fontWeight:900, color:'var(--accent-2)', marginBottom:10 }}>{score} POINTS!</div>}
+
+        <button 
+          className="jbtn"
+          onMouseDown={startCharge}
+          onMouseUp={stopCharge}
+          onTouchStart={startCharge}
+          onTouchEnd={stopCharge}
+          style={{ width:200, padding:20 }}
+        >
+          {phase === 'charging' ? 'CHARGING...' : phase === 'flying' ? 'FLYING!' : 'HOLD TO CHARGE'}
+        </button>
+      </Glass>
+    </div>
+  )
+}
 
 export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, addToast }) => {
   const isCyber = theme === 'theme-cyber'
