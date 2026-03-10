@@ -102,6 +102,30 @@ export const ProgBar = ({ pct, cssVar='--fuel-bar' }) => (
 )
 
 /* ═══════════════════════════════════════════════════════════════
+   MISSING MASCOTS (GUGEL'S APOLOGY)
+═══════════════════════════════════════════════════════════════ */
+export const JellyFish = ({ size = 60, className = '' }) => (
+  <svg width={size} height={size * 1.4} viewBox="0 0 60 84" className={className} style={{ filter: 'drop-shadow(0 4px 14px var(--jelly-glow))' }}>
+    <ellipse cx="30" cy="28" rx="26" ry="22" fill="var(--jelly-body)" fillOpacity="0.85" />
+    <path d="M10 48 Q10 65 15 75 M22 50 Q22 70 20 80 M38 50 Q38 70 40 80 M50 48 Q50 65 45 75" stroke="var(--jelly-body)" strokeWidth="2.5" fill="none" opacity="0.7" />
+  </svg>
+)
+
+export const CyberBot = ({ size = 60 }) => (
+  <svg width={size} height={size} viewBox="0 0 60 60" style={{ filter: 'drop-shadow(0 0 12px var(--jelly-glow))' }}>
+    <rect x="10" y="10" width="40" height="40" rx="4" fill="var(--jelly-body)" fillOpacity="0.2" stroke="var(--jelly-body)" strokeWidth="1.5" />
+    <rect x="18" y="22" width="10" height="4" fill="var(--jelly-body)" />
+    <rect x="32" y="22" width="10" height="4" fill="var(--jelly-body)" />
+  </svg>
+)
+
+export const JellyCube = ({ size = 48 }) => (
+  <svg width={size} height={size} viewBox="0 0 60 60">
+    <rect x="10" y="10" width="40" height="40" rx="12" fill="var(--accent-2)" fillOpacity="0.6" />
+  </svg>
+)
+
+/* ═══════════════════════════════════════════════════════════════
    5. VIEWS: Dash, Shooter, Inv
 ═══════════════════════════════════════════════════════════════ */
 export const DashView = ({ balance, connected, activeBoost, theme }) => (
