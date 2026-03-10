@@ -278,6 +278,10 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
           </div>
         </div>
       </Glass>
+      {/* GAME AREA JANGAN UBAH LU GUE PUKUL GUGEL KALO LU UBAH! */}
+    </div>
+  )
+}
 
 export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, addToast }) => {
   const isCyber = theme === 'theme-cyber'
