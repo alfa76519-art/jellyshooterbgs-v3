@@ -939,16 +939,23 @@ export const DashView = ({ theme, connected, balance, tickets, setTickets, setBa
 /* ═══════════════════════════════════════════════════════════════
    INVENTORY VIEW — NFT toggle for game boost
 ═══════════════════════════════════════════════════════════════ */
-export const InvView = ({ theme, connected, addToast, nfts, setNfts, setOwnedNFTs }) => {
+export const InvView = ({ theme, connected, addToast, nfts = [], setNfts, setOwnedNFTs }) => {
   const isCyber = theme === 'theme-cyber'
   const RARITY_ORDER = { Legendary:0, Epic:1, Rare:2, Uncommon:3 }
-  const sorted = [...nfts].sort((a, b) => RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity])
+  
+  // 1. SABUK PENGAMAN: Pastikan nfts selalu dianggap array walau kosong
+  const safeNfts = nfts || [] 
+  const sorted = [...safeNfts].sort((a, b) => RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity])
 
   const toggleEquip = (nft) => {
-    const newNfts = nfts.map(n => n.id === nft.id ? { ...n, equipped: !n.equipped } : n)
+    if (!nft) return; // 2. SABUK PENGAMAN: Kalau datanya zonk, jangan dieksekusi
+
+    const newNfts = safeNfts.map(n => n.id === nft.id ? { ...n, equipped: !n.equipped } : n)
     setNfts(newNfts)
+    
     const equipped = newNfts.filter(n => n.equipped && n.owned)
     setOwnedNFTs(equipped)
+    
     addToast(
       nft.equipped
         ? `${nft.name} unequipped from Jelly Shooter`
