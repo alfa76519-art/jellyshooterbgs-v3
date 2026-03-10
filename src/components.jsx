@@ -20,16 +20,50 @@ export function getSavedTheme() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   2. BOOST LOGIC & DATA (THE CORE)
+   DATA JANGAN UBAH ENTE UBAH ANE PUKUL
+═══════════════════════════════════════════════════════════════ */
+export const INITIAL_RAFFLES = [
+  { id:1, emoji:'🪼', name:'Jellyfish Genesis', prize:'5,000 $BGS',       price:50,  sold:73, max:100, ends:'2h 14m',  hot:true  },
+  { id:2, emoji:'🍑', name:'Peach Bomb',        prize:'2,500 $BGS + NFT', price:25,  sold:41, max:80,  ends:'5h 50m',  hot:false },
+  { id:3, emoji:'🫧', name:'Bubble Surge',      prize:'10,000 $BGS',      price:100, sold:18, max:50,  ends:'23h 00m', hot:true  },
+]
+export const ALL_NFTS = [
+  { id:1, name:'Motocat #0042', rarity:'Legendary', emoji:'🐱', trait:'Gold Helmet',  rc:'#f59e0b', glow:'glow-legendary', owned:true,  equipped:false },
+  { id:2, name:'Motocat #0117', rarity:'Epic',      emoji:'😺', trait:'Neon Wings',   rc:'#8b5cf6', glow:'glow-epic',      owned:true,  equipped:false },
+  { id:3, name:'Motocat #0289', rarity:'Rare',      emoji:'🐈', trait:'Cyber Visor',  rc:'#0ea5e9', glow:'glow-rare',      owned:false, equipped:false },
+  { id:4, name:'Motocat #0401', rarity:'Uncommon',  emoji:'🙀', trait:'Pink Bandana', rc:'#ec4899', glow:'',               owned:false, equipped:false },
+]
+export const TABS        = [{ id:'dashboard', label:'Dashboard', icon:'🏠' }, { id:'jellyShooter', label:'Jelly Shooter', icon:'🪼' }, { id:'inventory', label:'Inventory', icon:'🎁' }]
+export const THEME_OPTS  = [{ id:'theme-jelly', icon:'🍬', label:'Jelly', desc:'Pastel Candy' }, { id:'theme-light', icon:'☀️', label:'Light', desc:'Minimalist' }, { id:'theme-cyber', icon:'🤖', label:'Cyber', desc:'Neon Hacker' }]
+
+/* ═══════════════════════════════════════════════════════════════
+   NFT BOOST LOGIC
 ═══════════════════════════════════════════════════════════════ */
 export const NFT_BOOSTS = {
-  Legendary: { sugarRate: 2.5, scoreMulti: 2.0, shakeBonus: 20, label: 'LEGENDARY BOOST', color: '#f59e0b', icon: '👑', perks: ['2.5× Sugar Rate', '2.0× Score', '+20 Shake Bonus'] },
-  Epic:      { sugarRate: 1.8, scoreMulti: 1.5, shakeBonus: 16, label: 'EPIC BOOST',      color: '#8b5cf6', icon: '💜', perks: ['1.8× Sugar Rate', '1.5× Score', '+16 Shake Bonus'] },
-  Rare:      { sugarRate: 1.4, scoreMulti: 1.25,shakeBonus: 14, label: 'RARE BOOST',      color: '#0ea5e9', icon: '🔵', perks: ['1.4× Sugar Rate', '1.25× Score', '+14 Shake Bonus'] },
-  Uncommon:  { sugarRate: 1.15,scoreMulti: 1.1, shakeBonus: 12, label: 'UNCOMMON BOOST',  color: '#ec4899', icon: '🩷', perks: ['1.15× Sugar Rate', '1.1× Score', 'Base Shake'] },
+  Legendary: { sugarRate: 2.5, pressureRate: 1.8, scoreMulti: 2.0, shakeBonus: 20, label: 'LEGENDARY BOOST', color: '#f59e0b', icon: '👑', perks: ['2.5× Sugar Rate', '2.0× Score', '+20 Shake Bonus'] },
+  Epic:      { sugarRate: 1.8, pressureRate: 1.4, scoreMulti: 1.5, shakeBonus: 16, label: 'EPIC BOOST',      color: '#8b5cf6', icon: '💜', perks: ['1.8× Sugar Rate', '1.5× Score', '+16 Shake Bonus'] },
+  Rare:      { sugarRate: 1.4, pressureRate: 1.2, scoreMulti: 1.25,shakeBonus: 14, label: 'RARE BOOST',      color: '#0ea5e9', icon: '🔵', perks: ['1.4× Sugar Rate', '1.25× Score', '+14 Shake Bonus'] },
+  Uncommon:  { sugarRate: 1.15,pressureRate: 1.05,scoreMulti: 1.1, shakeBonus: 12, label: 'UNCOMMON BOOST',  color: '#ec4899', icon: '🩷', perks: ['1.15× Sugar Rate', '1.1× Score', 'Base Shake'] },
 }
 
 export function computeActiveBoost(ownedNFTs) {
+  const safeOwned = Array.isArray(ownedNFTs) ? ownedNFTs : []
+  if (safeOwned.length === 0) return null
+  const merged = { sugarRate: 0, pressureRate: 0, scoreMulti: 0, shakeBonus: 0 }
+  const order = ['Legendary', 'Epic', 'Rare', 'Uncommon']
+  const top = order.find(r => safeOwned.some(n => n.rarity === r)) || 'Uncommon'
+  const base = NFT_BOOSTS[top] || NFT_BOOSTS['Uncommon']
+  safeOwned.forEach(n => {
+    const b = NFT_BOOSTS[n.rarity] || NFT_BOOSTS['Uncommon']
+    const isTop = n.rarity === top
+    merged.sugarRate    += b.sugarRate    * (isTop ? 1 : 0.1)
+    merged.pressureRate += b.pressureRate * (isTop ? 1 : 0.1)
+    merged.scoreMulti   += b.scoreMulti   * (isTop ? 1 : 0.1)
+    merged.shakeBonus   += b.shakeBonus   * (isTop ? 1 : 0.1)
+  })
+  return { ...merged, label: base.label, color: base.color, icon: base.icon, count: safeOwned.length, top }
+}
+
   const safeOwned = Array.isArray(ownedNFTs) ? ownedNFTs : []
   if (safeOwned.length === 0) return null
   const order = ['Legendary', 'Epic', 'Rare', 'Uncommon']
@@ -44,16 +78,6 @@ export function computeActiveBoost(ownedNFTs) {
     merged.shakeBonus += b.shakeBonus * (isTop ? 1 : 0.1)
   })
   return { ...merged, label: base.label, color: base.color, icon: base.icon, count: safeOwned.length, top }
-}
-
-export const ALL_NFTS = [
-  { id:1, name:'Motocat #0042', rarity:'Legendary', emoji:'🐱', trait:'Gold Helmet',  rc:'#f59e0b', glow:'glow-legendary', owned:true,  equipped:false },
-  { id:2, name:'Motocat #0117', rarity:'Epic',      emoji:'😺', trait:'Neon Wings',   rc:'#8b5cf6', glow:'glow-epic',      owned:true,  equipped:false },
-  { id:3, name:'Motocat #0289', rarity:'Rare',      emoji:'🐈', trait:'Cyber Visor',  rc:'#0ea5e9', glow:'glow-rare',      owned:false, equipped:false },
-  { id:4, name:'Motocat #0401', rarity:'Uncommon',  emoji:'🙀', trait:'Pink Bandana', rc:'#ec4899', glow:'',               owned:false, equipped:false },
-]
-export const TABS = [{ id:'dashboard', label:'Dashboard', icon:'🏠' }, { id:'jellyShooter', label:'Jelly Shooter', icon:'🪼' }, { id:'inventory', label:'Inventory', icon:'🎁' }]
-export const THEME_OPTS = [{ id:'theme-jelly', icon:'🍬', label:'Jelly', desc:'Pastel Candy' }, { id:'theme-light', icon:'☀️', label:'Light', desc:'Minimalist' }, { id:'theme-cyber', icon:'🤖', label:'Cyber', desc:'Neon Hacker' }]
 
 /* ═══════════════════════════════════════════════════════════════
    3. VISUAL COMPONENTS & ATOMS
@@ -396,16 +420,44 @@ export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, ad
 
   return (
     <div className="panel-enter" style={{ display:'flex', flexDirection:'column', gap:18 }}>
-      <Glass style={{ padding:'20px 26px' }}>
-        <h2 style={{ fontFamily:'var(--font-hud)', fontSize:22 }}>{isCyber ? 'VAULT.SYS' : '🎁 My Motocats'}</h2>
+      <Glass style={{ padding:'20px 26px', background: isCyber ? 'rgba(0,255,255,0.05)' : 'rgba(255,255,255,0.5)' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div>
+            <h2 style={{ fontFamily:'var(--font-hud)', fontSize:22 }}>{isCyber ? 'VAULT.SYS' : '🎁 My Motocats'}</h2>
+            <p style={{ fontSize:11, opacity:0.7 }}>{equipped.length} / {safeNfts.length} Motocats Equipped</p>
+          </div>
+          {activeBoost && (
+            <div style={{ textAlign:'right' }}>
+               <span style={{ fontSize:10, fontWeight:900, color:'var(--text-muted)' }}>CURRENT_BOOST</span>
+               <div style={{ fontFamily:'var(--font-hud)', fontSize:24, color:activeBoost.color }}>×{activeBoost.scoreMulti.toFixed(2)}</div>
+            </div>
+          )}
+        </div>
       </Glass>
+
       {activeBoost && <BoostPanel boost={activeBoost} isCyber={isCyber} />}
+
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:14 }}>
-        {safeNfts.map((nft, i) => (
-          <Glass key={nft.id} style={{ padding:18, border:nft.equipped?`2px solid ${nft.rc}`:`1.5px solid ${nft.rc}44`, position:'relative' }}>
-            <div style={{ width:'100%', aspectRatio:'1', background:`${nft.rc}22`, borderRadius:18, display:'flex', alignItems:'center', justifyContent:'center', fontSize:52, marginBottom:14 }}>{nft.emoji}</div>
-            <div style={{ fontWeight:800, textAlign:'center', marginBottom:10 }}>{nft.name}</div>
-            <JBtn onClick={() => toggleEquip(nft)} sx={{ width:'100%' }}>{nft.equipped?'UNEQUIP':'EQUIP'}</JBtn>
+        {safeNfts.map((nft) => (
+          <Glass key={nft.id} style={{ 
+            padding:18, 
+            border:nft.equipped ? `2px solid ${nft.rc}` : `1.5px solid ${nft.rc}44`,
+            boxShadow: nft.equipped ? `0 0 20px ${nft.rc}33` : 'none',
+            position:'relative',
+            opacity: nft.owned ? 1 : 0.5
+          }}>
+            <div style={{ position:'absolute', top:10, right:12, fontSize:10, fontWeight:900, color:nft.rc }}>{nft.rarity}</div>
+            <div style={{ width:'100%', aspectRatio:'1', background:`${nft.rc}15`, borderRadius:18, display:'flex', alignItems:'center', justifyContent:'center', fontSize:54, marginBottom:14 }}>{nft.emoji}</div>
+            <div style={{ fontWeight:800, textAlign:'center', marginBottom:12, fontSize:15 }}>{nft.name}</div>
+            
+            <div style={{ display:'flex', gap:6, marginBottom:12, justifyContent:'center' }}>
+               <div style={{ fontSize:9, background:'rgba(0,0,0,0.1)', padding:'3px 6px', borderRadius:6, fontWeight:700 }}>🚀 {NFT_BOOSTS[nft.rarity].sugarRate}x</div>
+               <div style={{ fontSize:9, background:'rgba(0,0,0,0.1)', padding:'3px 6px', borderRadius:6, fontWeight:700 }}>💎 {NFT_BOOSTS[nft.rarity].scoreMulti}x</div>
+            </div>
+
+            <JBtn onClick={() => toggleEquip(nft)} sx={{ width:'100%' }}>
+              {nft.equipped ? 'UNEQUIP' : 'EQUIP'}
+            </JBtn>
           </Glass>
         ))}
       </div>
