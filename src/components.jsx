@@ -968,9 +968,9 @@ export const InvView = ({ theme, connected, addToast, nfts = [], setNfts, setOwn
     )
   }
 
-  const activeBoost = computeActiveBoost(nfts.filter(n => n.equipped && n.owned))
-  const ownedCount  = nfts.filter(n => n.owned).length
-  const equippedCount = nfts.filter(n => n.equipped && n.owned).length
+  const top = order.find(r => ownedNFTs.some(n => n.rarity === r));
+// Tambahkan fallback ke Uncommon kalau top tidak ditemukan
+const base = NFT_BOOSTS[top] || NFT_BOOSTS['Uncommon'];
 
   return (
     <div className="panel-enter" style={{ display:'flex', flexDirection:'column', gap:18 }}>
