@@ -20,6 +20,13 @@ export function handleThemeChange(mode, setTheme) {
   applyThemeToDOM(mode)
   if (typeof setTheme === 'function') setTheme(mode)
 }
+export function switchTheme(mode, setTheme) { 
+  handleThemeChange(mode, setTheme) 
+}
+
+export function getSavedTheme() {
+  try { return localStorage.getItem('userTheme') || 'theme-jelly' } catch (e) { return 'theme-jelly' }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    2. BOOST LOGIC: Jantung Anti-Blank Putih
