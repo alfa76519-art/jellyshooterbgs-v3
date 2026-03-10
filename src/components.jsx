@@ -127,98 +127,157 @@ export const DashView = ({ balance, connected, activeBoost, theme }) => (
   </div>
 )
 
+/* ═══════════════════════════════════════════════════════════════
+   JELLY SHOOTER VIEW — Full Game Engine
+═══════════════════════════════════════════════════════════════ */
+
 export const JellyShooterView = ({ theme, activeBoost }) => {
   const isCyber = theme === 'theme-cyber'
-  const sugarRate    = activeBoost ? Math.min(activeBoost.sugarRate, 4) : 1
-  const scoreMulti   = activeBoost ? activeBoost.scoreMulti : 1
-  const shakeBonus   = activeBoost ? activeBoost.shakeBonus : 12
+  const sugarRate    = activeBoost ? Math.min(activeBoost.sugarRate,    4) : 1
+  const pressureRate = activeBoost ? Math.min(activeBoost.pressureRate, 3) : 1
+  const scoreMulti   = activeBoost ? activeBoost.scoreMulti               : 1
+  const shakeBonus   = activeBoost ? activeBoost.shakeBonus               : 12
 
-  const [phase, setPhase] = useState('idle')
-  const [sugar, setSugar] = useState(0)
-  const [score, setScore] = useState(0)
-  const [jellyPos, setJellyPos] = useState(0)
-  
-  const launchRef = useRef(null)
+  const [phase,     setPhase]     = useState('idle')
+  const [sugar,     setSugar]     = useState(0)
+  const [pressure,  setPressure]  = useState(0)
+  const [countdown, setCountdown] = useState(3)
+  const [score,     setScore]     = useState(0)
+  const [bestScore, setBest]      = useState(0)
+  const [particles, setParticles] = useState([])
+  const [shakeFlash,setShakeFlash]= useState(false)
+  const [jellyPos,  setJellyPos]  = useState(0)
+  const [thrusterOn,setThruster]  = useState(false)
 
-  const stopCharge = () => {
-    if (phase !== 'charging') return
+  const chargeRef = useRef(null)
+  const countRef  = useRef(null)
+  const flyRef    = useRef(null)
+  const sugarRef  = useRef(0)
+  const pressRef  = useRef(0)
+  const phaseRef  = useRef('idle')
+  const lastShake = useRef(0)
+
+  useEffect(() => { sugarRef.current = sugar },   [sugar])
+  useEffect(() => { pressRef.current = pressure }, [pressure])
+  useEffect(() => { phaseRef.current = phase },    [phase])
+
+  // Shake sensor
+  useEffect(() => {
+    const handler = e => {
+      const acc = e.accelerationIncludingGravity
+      if (!acc) return
+      const f = Math.sqrt((acc.x||0)**2+(acc.y||0)**2+(acc.z||0)**2)
+      const now = Date.now()
+      if (f > 22 && now - lastShake.current > 800) {
+        lastShake.current = now
+        setSugar(s => Math.min(s + shakeBonus, 100))
+        setShakeFlash(true)
+        setTimeout(() => setShakeFlash(false), 700)
+      }
+    }
+    window.addEventListener('devicemotion', handler, true)
+    return () => window.removeEventListener('devicemotion', handler, true)
+  }, [shakeBonus])
+
+  const spawnParticle = useCallback(() => {
+    const id = Date.now() + Math.random()
+    const angle = (Math.random()-0.5)*65
+    const dist  = 32 + Math.random()*52
+    setParticles(p => [...p, { id, px: Math.sin(angle*Math.PI/180)*dist, py: 42+Math.random()*32 }].slice(-20))
+    setTimeout(() => setParticles(p => p.filter(x => x.id !== id)), 600)
+  }, [])
+
+  const launchNow = useCallback(() => {
+    const power = sugarRef.current
+    const press = pressRef.current
+    const final = Math.round((power*10 + press*5) * scoreMulti)
     setPhase('flying')
     let pos = 0
-    const target = sugar * 3.5 // Semakin penuh gula, semakin tinggi terbangnya
-    
-    launchRef.current = setInterval(() => {
-      pos += 12
+    const target = power * 2.8
+    flyRef.current = setInterval(() => {
+      pos += (target-pos)*0.08 + 1.5
       setJellyPos(pos)
-      if (pos >= target) {
-        clearInterval(launchRef.current)
-        setScore(Math.round(sugar * scoreMulti))
+      if (pos >= target-5) {
+        clearInterval(flyRef.current)
+        setScore(final)
+        setBest(b => Math.max(b, final))
         setPhase('landed')
-        setTimeout(() => {
-          setPhase('idle')
-          setJellyPos(0)
-          setSugar(0)
-        }, 3000)
+        for (let i=0; i<14; i++) spawnParticle()
+        setTimeout(() => { setJellyPos(0); setSugar(0); setPressure(0) }, 2200)
+        setTimeout(() => setPhase('idle'), 2800)
       }
     }, 16)
-  }
+  }, [scoreMulti, spawnParticle])
 
-  const startCharge = () => {
-    if (phase !== 'idle') return
-    setPhase('charging')
-  }
+  const stopCharge = useCallback(() => {
+    clearInterval(chargeRef.current)
+    setThruster(false)
+    if (sugarRef.current < 10) { setPhase('idle'); setSugar(0); setPressure(0); return }
+    setPhase('countdown')
+    let c = 3; setCountdown(c)
+    countRef.current = setInterval(() => {
+      c--
+      if (c <= 0) { clearInterval(countRef.current); launchNow() }
+      else setCountdown(c)
+    }, 900)
+  }, [launchNow])
+
+  const startCharge = useCallback(() => {
+    if (phaseRef.current !== 'idle') return
+    setPhase('charging'); setThruster(true)
+    chargeRef.current = setInterval(() => {
+      setSugar(s => { const n = Math.min(s + 1.8*sugarRate, 100); sugarRef.current = n; return n })
+      setPressure(p => { const n = Math.min(p + 1.2*pressureRate, 100); pressRef.current = n; return n })
+      spawnParticle()
+      if (sugarRef.current >= 100) stopCharge()
+    }, 50)
+  }, [sugarRate, pressureRate, spawnParticle, stopCharge])
 
   useEffect(() => {
-    let timer;
-    if (phase === 'charging') {
-      timer = setInterval(() => {
-        setSugar(s => Math.min(s + (1.5 * sugarRate), 100))
-      }, 50)
-    }
-    return () => clearInterval(timer)
-  }, [phase, sugarRate])
+    const kd = e => { if (e.code==='Space') { e.preventDefault(); startCharge() } }
+    const ku = e => { if (e.code==='Space') { e.preventDefault(); stopCharge()  } }
+    window.addEventListener('keydown', kd)
+    window.addEventListener('keyup',   ku)
+    return () => { window.removeEventListener('keydown',kd); window.removeEventListener('keyup',ku) }
+  }, [startCharge, stopCharge])
+
+  useEffect(() => () => {
+    clearInterval(chargeRef.current); clearInterval(countRef.current); clearInterval(flyRef.current)
+  }, [])
+
+  const tierLabel = score>=900?'🏆 LEGENDARY':score>=600?'💜 EPIC':score>=300?'🔵 RARE':'🌱 STARTER'
 
   return (
-    <div className="panel-enter">
-      <Glass style={{ padding:40, textAlign:'center', minHeight:450, position:'relative', overflow:'hidden' }}>
-        <div style={{ marginBottom:20 }}>
-          <div style={{ fontFamily:'var(--font-hud)', fontSize:18, color:'var(--accent-1)', marginBottom:10 }}>
-            {phase === 'landed' ? `LAST SCORE: ${score}` : isCyber ? 'READY_TO_LAUNCH' : 'Jelly Power'}
+    <div className="panel-enter" style={{ display:'flex', flexDirection:'column', gap:18 }}>
+      {/* HUD */}
+      <Glass className="fup" style={{ padding:'18px 24px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
+          <div>
+            <h2 style={{ fontFamily:'var(--font-hud)', fontSize:22, color:'var(--text-primary)', marginBottom:4 }}>
+              {isCyber ? '🤖 CYBER LAUNCHER' : '🪼 Jelly Shooter'}
+            </h2>
+            <p style={{ fontSize:12, color:'var(--text-muted)', fontWeight:700, fontFamily:'var(--font-mono)' }}>
+              {isCyber ? '> Hold [SPACE] or button to charge' : 'Tahan tombol / SPACE → isi gula → lepas → luncur! 🚀'}
+            </p>
+            {activeBoost && (
+              <div style={{ marginTop:6, display:'inline-flex', alignItems:'center', gap:6, background:`${activeBoost.color}18`, border:`1px solid ${activeBoost.color}44`, borderRadius:999, padding:'4px 12px', fontSize:11, fontWeight:900, color:activeBoost.color, fontFamily:'var(--font-mono)' }}>
+                {activeBoost.icon} Score ×{activeBoost.scoreMulti.toFixed(2)} active
+              </div>
+            )}
           </div>
-          <ProgBar pct={sugar} />
-        </div>
-
-        <div style={{ position:'relative', height:220, display:'flex', alignItems:'flex-end', justifyContent:'center', marginBottom:30 }}>
-           <div style={{ 
-             position:'absolute', 
-             bottom: jellyPos, 
-             transition: phase==='flying' ? 'none' : 'bottom 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)' 
-           }}>
-              {isCyber ? <CyberBot size={85} /> : <JellyFish size={85} className={phase==='charging'?'float-idle':''} />}
-           </div>
-        </div>
-
-        <button 
-          className="jbtn"
-          onMouseDown={startCharge}
-          onMouseUp={stopCharge}
-          onTouchStart={e => { e.preventDefault(); startCharge(); }}
-          onTouchEnd={e => { e.preventDefault(); stopCharge(); }}
-          style={{ width:'100%', maxWidth:280, padding:20, fontSize:18, fontFamily:'var(--font-hud)' }}
-        >
-          {phase === 'charging' ? (isCyber ? 'CHARGING...' : 'MENGISI GULA...') : 
-           phase === 'flying' ? (isCyber ? 'IN_FLIGHT' : 'MELUNCUR!') : 
-           (isCyber ? 'HOLD_TO_START' : 'TAHAN UNTUK ISI')}
-        </button>
-        
-        {phase === 'landed' && (
-          <div className="fup" style={{ marginTop:15, fontFamily:'var(--font-hud)', color:'var(--accent-4)', fontSize:20 }}>
-            +{score} PTS
+          <div style={{ display:'flex', gap:20, alignItems:'center' }}>
+            {shakeFlash && <span style={{ fontFamily:'var(--font-hud)', fontSize:13, color:'var(--accent-4)', fontWeight:900 }}>+SHAKE {shakeBonus}⚡</span>}
+            <div style={{ textAlign:'center' }}>
+              <div style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>BEST</div>
+              <div style={{ fontFamily:'var(--font-hud)', fontSize:22, color:'var(--accent-2)' }}>{bestScore}</div>
+            </div>
+            <div style={{ textAlign:'center' }}>
+              <div style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>SCORE</div>
+              <div style={{ fontFamily:'var(--font-hud)', fontSize:28, color:'var(--accent-1)' }}>{score}</div>
+            </div>
           </div>
-        )}
+        </div>
       </Glass>
-    </div>
-  )
-}
 
 export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, addToast }) => {
   const isCyber = theme === 'theme-cyber'
