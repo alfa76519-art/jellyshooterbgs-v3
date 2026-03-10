@@ -146,7 +146,12 @@ export const JellyShooterView = ({ theme, activeBoost }) => (
 )
 
 export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, addToast }) => {
+  const isCyber = theme === 'theme-cyber'
   const safeNfts = Array.isArray(nfts) ? nfts : []
+  const equipped = safeNfts.filter(n => n.equipped && n.owned)
+  // Ini bakal manggil BoostPanel mewah lu
+  const activeBoost = computeActiveBoost(equipped)
+
   const toggleEquip = (nft) => {
     const newNfts = safeNfts.map(n => n.id === nft.id ? { ...n, equipped: !n.equipped } : n)
     setNfts(newNfts)
@@ -155,13 +160,52 @@ export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, ad
   }
 
   return (
-    <div className="panel-enter" style={{ display:'flex', flexDirection:'column', gap:15 }}>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:15 }}>
-        {safeNfts.map(nft => (
-          <Glass key={nft.id} style={{ padding:15, border: nft.equipped ? `2px solid ${nft.rc}` : 'none' }}>
-            <div style={{ fontSize:40, textAlign:'center' }}>{nft.emoji}</div>
-            <div style={{ fontWeight:800, textAlign:'center' }}>{nft.name}</div>
-            <JBtn size="sm" onClick={() => toggleEquip(nft)} sx={{marginTop:10, width:'100%'}}>{nft.equipped ? 'Unequip' : 'Equip'}</JBtn>
+    <div className="panel-enter" style={{ display:'flex', flexDirection:'column', gap:18 }}>
+      <Glass className="fup" style={{ padding:'20px 26px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
+          <div>
+            <h2 style={{ fontFamily:'var(--font-hud)', fontSize:22, color:'var(--text-primary)', marginBottom:4 }}>
+              {isCyber ? 'ASSET_VAULT.SYS' : '🎁 My Motocats'}
+            </h2>
+            <p style={{ fontSize:12, color:'var(--text-muted)', fontWeight:700, fontFamily:'var(--font-mono)' }}>
+              {isCyber ? '> Equip NFTs → activate Shooter boost' : 'Equip NFTs untuk boost Jelly Shooter! 🚀'}
+            </p>
+          </div>
+          <div style={{ display:'flex', gap:16 }}>
+            <div style={{ textAlign:'center' }}>
+              <div style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>OWNED</div>
+              <div style={{ fontFamily:'var(--font-hud)', fontSize:24, color:'var(--text-primary)' }}>{safeNfts.filter(n=>n.owned).length}</div>
+            </div>
+            <div style={{ textAlign:'center' }}>
+              <div style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>EQUIPPED</div>
+              <div style={{ fontFamily:'var(--font-hud)', fontSize:24, color:'var(--accent-4)' }}>{equipped.length}</div>
+            </div>
+          </div>
+        </div>
+      </Glass>
+
+      {/* Menampilkan Panel Boost kalau ada yang di-equip */}
+      {activeBoost && <BoostPanel boost={activeBoost} isCyber={isCyber} />}
+
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:14 }}>
+        {safeNfts.map((nft, i) => (
+          <Glass key={nft.id} className="fup" style={{ padding:18, overflow:'hidden', position:'relative', animationDelay:`${i*0.08}s`, border:nft.equipped?`2.5px solid ${nft.rc}`:`1.5px solid ${nft.rc}44`, borderRadius:'var(--card-radius)', opacity:nft.owned?1:0.45, transition:'transform 0.4s', boxShadow:nft.equipped?`0 0 24px ${nft.rc}55`:undefined }}>
+            <div style={{ position:'absolute', top:0, left:0, right:0, height:4, background:`linear-gradient(90deg,${nft.rc},${nft.rc}88)` }}/>
+            {nft.equipped && (
+              <div style={{ position:'absolute', top:12, right:12, background:`linear-gradient(135deg,${nft.rc},${nft.rc}aa)`, borderRadius:999, padding:'3px 10px', fontSize:9, fontWeight:900, color:'#fff', fontFamily:'var(--font-mono)', textTransform:'uppercase' }}>
+                {isCyber?'EQUIPPED':'⚡ Equipped'}
+              </div>
+            )}
+            <div style={{ width:'100%', aspectRatio:'1', borderRadius:18, background:`linear-gradient(135deg,${nft.rc}44,${nft.rc}aa)`, border:`1.5px solid ${nft.rc}66`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:52, marginBottom:14 }}>{nft.emoji}</div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
+              <div>
+                <h4 style={{ fontFamily:'var(--font-hud)', fontSize:13, color:'var(--text-primary)', marginBottom:3 }}>{nft.name}</h4>
+                <p style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700, fontFamily:'var(--font-mono)' }}>{nft.rarity}</p>
+              </div>
+            </div>
+            <JBtn grad={nft.equipped?'linear-gradient(135deg,rgba(200,180,220,0.2),rgba(200,180,220,0.05))':`linear-gradient(135deg,${nft.rc},${nft.rc}bb)`} onClick={() => toggleEquip(nft)} sx={{ width:'100%', color: nft.equipped ? 'var(--text-primary)' : '#fff' }}>
+              {nft.equipped?(isCyber?'UNEQUIP':'Unequip'):(isCyber?'EQUIP':'⚡ Equip')}
+            </JBtn>
           </Glass>
         ))}
       </div>
