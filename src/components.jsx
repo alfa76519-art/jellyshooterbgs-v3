@@ -740,7 +740,7 @@ export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, ad
                     <h4 style={{ fontFamily:'var(--font-hud)', fontSize:13, color:'var(--text-primary)', marginBottom:3 }}>{nft.name}</h4>
                     <p style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700, fontFamily:'var(--font-mono)' }}>{nft.trait}</p>
                   </div>
-                  <Badge label={nft.rarity} color={nft.rc}/>
+                  <div style={{ background:`${nft.rc}22`, color:nft.rc, padding:'4px 10px', borderRadius:999, fontSize:10, fontWeight:900, fontFamily:'var(--font-mono)', textTransform:'uppercase' }}>{nft.rarity}</div>
                 </div>
                 {nft.owned && (
                   <div style={{ marginBottom:10, padding:'8px 10px', borderRadius:10, background:`${nft.rc}10`, border:`1px solid ${nft.rc}22` }}>
