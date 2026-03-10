@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   applyThemeToDOM, handleThemeChange, getSavedTheme,
   TABS, THEME_OPTS, ALL_NFTS,
-  Toaster, PageBg, Glass, JBtn, ProgBar, Badge, BoostPanel,
-  JellyFish, CyberBot, JellyCube,
+  Toaster, PageBg, Glass, JBtn,
   DashView, JellyShooterView, InvView,
   computeActiveBoost,
 } from './components.jsx'
@@ -22,7 +21,7 @@ export default function App() {
   const [tmOpen,   setTmOpen]   = useState(false)
   const [mMenu,    setMMenu]    = useState(false)
   const [ownedNFTs, setOwnedNFTs] = useState([])   // NFTs equipped for boost
-  const [nfts, setNfts] = useState(ALL_NFTS || []) // Tambahin || [] biar aman!       // persists across tab switches
+  const [nfts, setNfts] = useState(ALL_NFTS)        // persists across tab switches
 
   const isCyber = theme === 'theme-cyber'
 
@@ -50,16 +49,11 @@ export default function App() {
     addToast(isCyber ? '> SESSION_TERMINATED' : 'Wallet disconnected', 'error')
   }
 
-const changeTheme = (mode) => {
-    setTheme(mode);
-    localStorage.setItem('theme', mode);
-    setTmOpen(false);
-    addToast(`> SYSTEM_THEME: ${mode.toUpperCase()} ACTIVE`); // Manggil fungsi di atas
-};
+  const changeTheme = (mode) => { handleThemeChange(mode, setTheme); setTmOpen(false) }
 
   return (
     <>
-      <div className={`app-root ${theme}`}>
+      <div className="app-root">
         <PageBg />
         <Toaster toasts={toasts} />
 
@@ -111,8 +105,7 @@ const changeTheme = (mode) => {
 
             {/* Logo */}
             <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0, marginRight:6 }}>
-              {isCyber ? <CyberBot size={28} style={{ animation:'floatIdle 3s ease-in-out infinite' }} />
-                       : <JellyFish size={28} className="float-idle" />}
+              {isCyber ? '🤖' : '🍬'}
               <span style={{ fontFamily:'var(--font-hud)', fontSize:16, color:'var(--text-accent)', lineHeight:1 }}>
                 {isCyber ? 'JELLY_SHOT' : 'Jelly Shot'}
               </span>
