@@ -1,23 +1,36 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 /* ═══════════════════════════════════════════════════════════════
-   1. THEME ENGINE
+   [1] THEME ENGINE — applyThemeToDOM, handleThemeChange, getSavedTheme
 ═══════════════════════════════════════════════════════════════ */
 export function applyThemeToDOM(mode) {
   document.documentElement.classList.remove('theme-jelly', 'theme-light', 'theme-cyber')
   if (mode !== 'theme-jelly') { document.documentElement.classList.add(mode) }
   try { localStorage.setItem('userTheme', mode) } catch (e) {}
 }
+
 export function handleThemeChange(mode, setTheme) {
   const valid = ['theme-jelly', 'theme-light', 'theme-cyber']
   if (!valid.includes(mode)) return
   applyThemeToDOM(mode)
   if (typeof setTheme === 'function') setTheme(mode)
 }
+
 export function switchTheme(mode, setTheme) { handleThemeChange(mode, setTheme) }
 export function getSavedTheme() {
   try { return localStorage.getItem('userTheme') || 'theme-jelly' } catch (e) { return 'theme-jelly' }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   [2] NFT BOOST LOGIC — NFT_BOOSTS, computeActiveBoost
+═══════════════════════════════════════════════════════════════ */
+export const NFT_BOOSTS = {
+  Legendary: { sugarRate: 2.5, pressureRate: 1.8, scoreMulti: 2.0, shakeBonus: 20, label: 'LEGENDARY BOOST', color: '#f59e0b', icon: '👑', perks: ['2.5× Sugar Rate', '2.0× Score', '+20 Shake Bonus'] },
+  Epic:      { sugarRate: 1.8, pressureRate: 1.4, scoreMulti: 1.5, shakeBonus: 16, label: 'EPIC BOOST',      color: '#8b5cf6', icon: '💜', perks: ['1.8× Sugar Rate', '1.5× Score', '+16 Shake Bonus'] },
+  Rare:      { sugarRate: 1.4, pressureRate: 1.2, scoreMulti: 1.25,shakeBonus: 14, label: 'RARE BOOST',      color: '#0ea5e9', icon: '🔵', perks: ['1.4× Sugar Rate', '1.25× Score', '+14 Shake Bonus'] },
+  Uncommon:  { sugarRate: 1.15,pressureRate: 1.05,scoreMulti: 1.1, shakeBonus: 12, label: 'UNCOMMON BOOST',  color: '#ec4899', icon: '🩷', perks: ['1.15× Sugar Rate', '1.1× Score', 'Base Shake'] },
+}
+
 export function computeActiveBoost(ownedNFTs) {
   const safeOwned = Array.isArray(ownedNFTs) ? ownedNFTs : []
   if (safeOwned.length === 0) return null
@@ -37,7 +50,7 @@ export function computeActiveBoost(ownedNFTs) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   INI DATA <--- JANGAN UBAH, ENTE UBAH ANE PUKUL!
+   [3] DATA — INITIAL_RAFFLES, ALL_NFTS, TABS, THEME_OPTS
 ═══════════════════════════════════════════════════════════════ */
 export const INITIAL_RAFFLES = [
   { id:1, emoji:'🪼', name:'Jellyfish Genesis', prize:'5,000 $BGS',       price:50,  sold:73, max:100, ends:'2h 14m',  hot:true  },
@@ -52,16 +65,6 @@ export const ALL_NFTS = [
 ]
 export const TABS        = [{ id:'dashboard', label:'Dashboard', icon:'🏠' }, { id:'jellyShooter', label:'Jelly Shooter', icon:'🪼' }, { id:'inventory', label:'Inventory', icon:'🎁' }]
 export const THEME_OPTS  = [{ id:'theme-jelly', icon:'🍬', label:'Jelly', desc:'Pastel Candy' }, { id:'theme-light', icon:'☀️', label:'Light', desc:'Minimalist' }, { id:'theme-cyber', icon:'🤖', label:'Cyber', desc:'Neon Hacker' }]
-
-/* ═══════════════════════════════════════════════════════════════
-   NFT BOOST LOGIC
-═══════════════════════════════════════════════════════════════ */
-export const NFT_BOOSTS = {
-  Legendary: { sugarRate: 2.5, pressureRate: 1.8, scoreMulti: 2.0, shakeBonus: 20, label: 'LEGENDARY BOOST', color: '#f59e0b', icon: '👑', perks: ['2.5× Sugar Rate', '2.0× Score', '+20 Shake Bonus'] },
-  Epic:      { sugarRate: 1.8, pressureRate: 1.4, scoreMulti: 1.5, shakeBonus: 16, label: 'EPIC BOOST',      color: '#8b5cf6', icon: '💜', perks: ['1.8× Sugar Rate', '1.5× Score', '+16 Shake Bonus'] },
-  Rare:      { sugarRate: 1.4, pressureRate: 1.2, scoreMulti: 1.25,shakeBonus: 14, label: 'RARE BOOST',      color: '#0ea5e9', icon: '🔵', perks: ['1.4× Sugar Rate', '1.25× Score', '+14 Shake Bonus'] },
-  Uncommon:  { sugarRate: 1.15,pressureRate: 1.05,scoreMulti: 1.1, shakeBonus: 12, label: 'UNCOMMON BOOST',  color: '#ec4899', icon: '🩷', perks: ['1.15× Sugar Rate', '1.1× Score', 'Base Shake'] },
-}
 
 /* ═══════════════════════════════════════════════════════════════
    [4] SHARED UI — Glass, PageBg, Toaster, JBtn, ProgBar, Badge, BoostPanel
@@ -175,6 +178,62 @@ export const BoostPanel = ({ boost, isCyber }) => {
     </Glass>
   )
 }
+
+/* ── [5] SVG COMPONENTS — JellyFish, CyberBot, JellyCube ── */
+export const JellyFish = ({ size = 60, className = '', style: sx = {} }) => (
+  <svg width={size} height={size*1.4} viewBox="0 0 60 84" className={className} style={{ filter:'drop-shadow(0 4px 14px var(--jelly-glow))', ...sx }}>
+    <defs>
+      <radialGradient id="jbg" cx="40%" cy="35%">
+        <stop offset="0%" stopColor="white" stopOpacity="0.7"/>
+        <stop offset="45%" stopColor="var(--jelly-body)" stopOpacity="0.95"/>
+        <stop offset="100%" stopColor="var(--jelly-body)" stopOpacity="0.65"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="30" cy="28" rx="26" ry="22" fill="url(#jbg)"/>
+    <ellipse cx="22" cy="18" rx="10" ry="6" fill="rgba(255,255,255,0.38)"/>
+    {[6,13,20,27,34,41,48,54].map((x,i) => (
+      <path key={i} d={`M${x} 48 Q${x-2} ${60+i*2} ${x} ${67+i*2}`} stroke="var(--jelly-body)" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.75"/>
+    ))}
+    {[10,22,38,50].map((x,i) => (
+      <path key={i} d={`M${x} 50 C${x-5} ${62} ${x+6} ${70} ${x-3} ${80}`} stroke="var(--jelly-body)" strokeWidth="1.8" strokeLinecap="round" fill="none" opacity="0.5"/>
+    ))}
+  </svg>
+)
+
+export const CyberBot = ({ size = 60, style: sx = {} }) => (
+  <svg width={size} height={size*1.3} viewBox="0 0 60 78" style={{ filter:'drop-shadow(0 0 12px var(--jelly-glow))', ...sx }}>
+    <defs>
+      <linearGradient id="cbg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="var(--jelly-body)" stopOpacity="0.2"/>
+        <stop offset="100%" stopColor="var(--jelly-body)" stopOpacity="0.9"/>
+      </linearGradient>
+    </defs>
+    <rect x="10" y="8" width="40" height="38" rx="4" fill="url(#cbg)" stroke="var(--jelly-body)" strokeWidth="1.5"/>
+    <rect x="16" y="18" width="10" height="6" rx="2" fill="var(--jelly-body)" opacity="0.9"/>
+    <rect x="34" y="18" width="10" height="6" rx="2" fill="var(--jelly-body)" opacity="0.9"/>
+    <rect x="18" y="32" width="24" height="4" rx="2" fill="none" stroke="var(--jelly-body)" strokeWidth="1" opacity="0.6"/>
+    {[20,24,28,32,36].map(x => <line key={x} x1={x} y1="32" x2={x} y2="36" stroke="var(--jelly-body)" strokeWidth="1" opacity="0.5"/>)}
+    {[18,30,42].map((x,i) => <rect key={i} x={x-4} y="46" width="8" height="16" rx="2" fill="var(--jelly-body)" opacity="0.7"/>)}
+    <line x1="30" y1="8" x2="30" y2="2" stroke="var(--jelly-body)" strokeWidth="2"/>
+    <circle cx="30" cy="2" r="2.5" fill="var(--jelly-body)"/>
+    <rect x="14" y="11" width="18" height="12" rx="2" fill="rgba(255,255,255,0.15)"/>
+  </svg>
+)
+
+export const JellyCube = ({ size = 48, style: sx = {} }) => (
+  <svg width={size} height={size} viewBox="0 0 60 60" style={{ filter:'drop-shadow(0 4px 12px var(--jelly-glow))', ...sx }}>
+    <defs>
+      <linearGradient id="cubeg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="white" stopOpacity="0.6"/>
+        <stop offset="60%" stopColor="var(--accent-2)" stopOpacity="0.9"/>
+        <stop offset="100%" stopColor="var(--accent-3)" stopOpacity="0.7"/>
+      </linearGradient>
+    </defs>
+    <rect x="10" y="10" width="40" height="40" rx="12" fill="url(#cubeg)"/>
+    <ellipse cx="24" cy="22" rx="8" ry="5" fill="rgba(255,255,255,0.42)"/>
+  </svg>
+)
+
 /* ═══════════════════════════════════════════════════════════════
    [6] DASHBOARD VIEW — raffles, buy ticket, reveal winner, stats
 ═══════════════════════════════════════════════════════════════ */
@@ -337,9 +396,8 @@ export const DashView = ({ theme, connected, balance, tickets, setTickets, setBa
   )
 }
 
-
 /* ═══════════════════════════════════════════════════════════════
-   JELLY SHOOTER VIEW — Full Game Engine
+   [7] JELLY SHOOTER VIEW — game engine, sugar/pressure, launch, shake
 ═══════════════════════════════════════════════════════════════ */
 export const JellyShooterView = ({ theme, activeBoost }) => {
   const isCyber = theme === 'theme-cyber'
@@ -588,6 +646,7 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
     </div>
   )
 }
+
 /* ═══════════════════════════════════════════════════════════════
    [8] INVENTORY VIEW — NFT list, equip toggle, boost panel, list/transfer demo
 ═══════════════════════════════════════════════════════════════ */
