@@ -663,7 +663,7 @@ export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, ad
     const newNfts = safeNfts.map(n => n.id===nft.id ? {...n, equipped:!n.equipped} : n)
     setNfts(newNfts)
     setOwnedNFTs(newNfts.filter(n => n.equipped && n.owned))
-    addToast(nft.equipped ? `${nft.name} unequipped` : `${nft.name} equipped! 🚀`, nft.equipped?'error':'success')
+    addToast(`${nft.name} ${nft.equipped ? 'Unequipped' : 'Equipped'}!`, 'success')
   }
 
   return (
