@@ -144,10 +144,10 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
     if (phase !== 'charging') return
     setPhase('flying')
     let pos = 0
-    const target = sugar * 2.5
+    const target = sugar * 3.5 // Semakin penuh gula, semakin tinggi terbangnya
     
     launchRef.current = setInterval(() => {
-      pos += 10
+      pos += 12
       setJellyPos(pos)
       if (pos >= target) {
         clearInterval(launchRef.current)
@@ -168,40 +168,53 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
   }
 
   useEffect(() => {
+    let timer;
     if (phase === 'charging') {
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         setSugar(s => Math.min(s + (1.5 * sugarRate), 100))
       }, 50)
-      return () => clearInterval(timer)
     }
+    return () => clearInterval(timer)
   }, [phase, sugarRate])
 
   return (
     <div className="panel-enter">
-      <Glass style={{ padding:40, textAlign:'center', minHeight:400, position:'relative' }}>
+      <Glass style={{ padding:40, textAlign:'center', minHeight:450, position:'relative', overflow:'hidden' }}>
         <div style={{ marginBottom:20 }}>
-          <div style={{ fontSize:14, fontWeight:900, color:'var(--accent-1)', marginBottom:10 }}>SCORE: {score}</div>
+          <div style={{ fontFamily:'var(--font-hud)', fontSize:18, color:'var(--accent-1)', marginBottom:10 }}>
+            {phase === 'landed' ? `LAST SCORE: ${score}` : isCyber ? 'READY_TO_LAUNCH' : 'Jelly Power'}
+          </div>
           <ProgBar pct={sugar} />
         </div>
 
-        <div style={{ position:'relative', height:200, overflow:'hidden', marginBottom:20 }}>
-           <div style={{ position:'absolute', bottom: jellyPos, left:'50%', transform:'translateX(-50%)', transition: phase==='flying'?'none':'bottom 0.5s' }}>
-              {isCyber ? <CyberBot size={80} /> : <JellyFish size={80} className={phase==='charging'?'float-idle':''} />}
+        <div style={{ position:'relative', height:220, display:'flex', alignItems:'flex-end', justifyContent:'center', marginBottom:30 }}>
+           <div style={{ 
+             position:'absolute', 
+             bottom: jellyPos, 
+             transition: phase==='flying' ? 'none' : 'bottom 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)' 
+           }}>
+              {isCyber ? <CyberBot size={85} /> : <JellyFish size={85} className={phase==='charging'?'float-idle':''} />}
            </div>
         </div>
-
-        {phase === 'landed' && <div style={{ fontSize:24, fontWeight:900, color:'var(--accent-2)', marginBottom:10 }}>{score} POINTS!</div>}
 
         <button 
           className="jbtn"
           onMouseDown={startCharge}
           onMouseUp={stopCharge}
-          onTouchStart={startCharge}
-          onTouchEnd={stopCharge}
-          style={{ width:200, padding:20 }}
+          onTouchStart={e => { e.preventDefault(); startCharge(); }}
+          onTouchEnd={e => { e.preventDefault(); stopCharge(); }}
+          style={{ width:'100%', maxWidth:280, padding:20, fontSize:18, fontFamily:'var(--font-hud)' }}
         >
-          {phase === 'charging' ? 'CHARGING...' : phase === 'flying' ? 'FLYING!' : 'HOLD TO CHARGE'}
+          {phase === 'charging' ? (isCyber ? 'CHARGING...' : 'MENGISI GULA...') : 
+           phase === 'flying' ? (isCyber ? 'IN_FLIGHT' : 'MELUNCUR!') : 
+           (isCyber ? 'HOLD_TO_START' : 'TAHAN UNTUK ISI')}
         </button>
+        
+        {phase === 'landed' && (
+          <div className="fup" style={{ marginTop:15, fontFamily:'var(--font-hud)', color:'var(--accent-4)', fontSize:20 }}>
+            +{score} PTS
+          </div>
+        )}
       </Glass>
     </div>
   )
