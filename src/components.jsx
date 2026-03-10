@@ -130,7 +130,6 @@ export const DashView = ({ balance, connected, activeBoost, theme }) => (
 /* ═══════════════════════════════════════════════════════════════
    JELLY SHOOTER VIEW — Full Game Engine
 ═══════════════════════════════════════════════════════════════ */
-
 export const JellyShooterView = ({ theme, activeBoost }) => {
   const isCyber = theme === 'theme-cyber'
   const sugarRate    = activeBoost ? Math.min(activeBoost.sugarRate,    4) : 1
@@ -278,10 +277,109 @@ export const JellyShooterView = ({ theme, activeBoost }) => {
           </div>
         </div>
       </Glass>
-      {/* GAME AREA JANGAN UBAH LU GUE PUKUL GUGEL KALO LU UBAH! */}
+
+      {/* Game Grid */}
+      <div className="game-grid" style={{ display:'grid', gridTemplateColumns:'1fr 270px', gap:14 }}>
+        {/* Arena */}
+        <Glass className="fup" style={{ position:'relative', height:430, overflow:'hidden', background:'var(--game-bg)', border:'1.5px solid var(--game-border)' }}>
+          {isCyber && (
+            <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(var(--accent-1) 1px,transparent 1px),linear-gradient(90deg,var(--accent-1) 1px,transparent 1px)', backgroundSize:'30px 30px', opacity:0.05, animation:'gridPulse 3s ease-in-out infinite', pointerEvents:'none', zIndex:0 }}/>
+          )}
+          {particles.map(p => (
+            <div key={p.id} style={{ position:'absolute', left:'50%', bottom:80, width:8, height:8, borderRadius:isCyber?'2px':'50%', background:'var(--particle-clr)', '--px':`${p.px}px`, '--py':`${p.py}px`, animation:'particleBurst 0.6s ease-out forwards', zIndex:2 }}/>
+          ))}
+          <div style={{ position:'absolute', bottom:70, left:0, right:0, height:2, background:'var(--game-border)', opacity:0.4 }}/>
+          {activeBoost && (
+            <div style={{ position:'absolute', left:'50%', bottom:66, transform:'translateX(-50%)', width:80, height:20, borderRadius:'50%', background:`radial-gradient(ellipse,${activeBoost.color}55,transparent)`, zIndex:3, animation:'boostPulse 1.8s ease-in-out infinite' }}/>
+          )}
+          {/* Character */}
+          <div style={{ position:'absolute', left:'50%', bottom: 80 + ((phase==='flying'||phase==='landed') ? jellyPos : 0), transform:'translateX(-50%)', zIndex:5, animation: phase==='charging'?(isCyber?'cyberJitter 0.15s linear infinite':'jellyWobble 0.3s ease-in-out infinite'):phase==='flying'?'none':'floatIdle 3.5s ease-in-out infinite', transition:'bottom 0.05s linear' }}>
+            {isCyber ? <CyberBot size={72}/> : <JellyFish size={72}/>}
+          </div>
+          {/* Thrusters */}
+          {thrusterOn && [...Array(5)].map((_,i) => (
+            <div key={i} style={{ position:'absolute', left:`calc(50% + ${(i-2)*12}px)`, bottom:76, width:isCyber?6:8, height:isCyber?6:8, borderRadius:isCyber?'2px':'50%', background:isCyber?`hsl(${120+i*15},100%,60%)`:`hsl(${310+i*15},90%,${70+i*5}%)`, animation:`thrusterBubble ${0.4+i*0.08}s ease-out infinite`, animationDelay:`${i*0.06}s`, zIndex:4 }}/>
+          ))}
+          {/* Countdown */}
+          {phase==='countdown' && (
+            <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', zIndex:10, backdropFilter:'blur(4px)', borderRadius:'var(--card-radius)' }}>
+              <div style={{ fontFamily:'var(--font-hud)', fontSize:96, color:'var(--accent-1)', animation:'countdownAnim 0.9s ease-in-out forwards', textShadow:'0 0 40px var(--jelly-glow)' }}>{countdown}</div>
+            </div>
+          )}
+          {/* Landed */}
+          {phase==='landed' && (
+            <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10, zIndex:10, backdropFilter:'blur(6px)', borderRadius:'var(--card-radius)' }}>
+              <div style={{ fontFamily:'var(--font-hud)', fontSize:40, color:'var(--accent-1)', textShadow:'0 0 30px var(--jelly-glow)' }}>{score} pts!</div>
+              {activeBoost && <div style={{ fontSize:13, fontWeight:900, color:activeBoost.color, fontFamily:'var(--font-mono)' }}>{activeBoost.icon} ×{activeBoost.scoreMulti.toFixed(2)} applied</div>}
+              <div style={{ fontFamily:'var(--font-hud)', fontSize:18, color:'var(--text-muted)' }}>{tierLabel}</div>
+            </div>
+          )}
+          {phase==='idle' && <div style={{ position:'absolute', bottom:14, left:0, right:0, textAlign:'center', fontSize:12, fontWeight:800, color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>{isCyber?'> HOLD_BUTTON or [SPACE]':'💡 Tahan tombol atau SPACE'}</div>}
+        </Glass>
+
+        {/* Controls */}
+        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+          <Glass style={{ padding:'16px 18px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:900, color:'var(--text-muted)' }}>
+                {isCyber?'[ POWER.CORE ]':'Kadar Gula ⚡'}
+                {sugarRate>1 && <span style={{ color:'var(--accent-4)', marginLeft:4 }}>×{sugarRate.toFixed(1)}</span>}
+              </span>
+              <span style={{ fontFamily:'var(--font-hud)', fontSize:14, color:'var(--accent-1)', fontWeight:900 }}>{Math.round(sugar)}%</span>
+            </div>
+            <ProgBar pct={sugar} cssVar="--fuel-bar"/>
+            {sugar>=90 && <div style={{ marginTop:6, fontSize:10, fontWeight:900, color:'var(--accent-1)', fontFamily:'var(--font-mono)', textAlign:'center', animation:'jellyWobble 0.5s ease infinite' }}>{isCyber?'[!] OVERFLOW':'⚠️ Gula Penuh!'}</div>}
+          </Glass>
+
+          <Glass style={{ padding:'16px 18px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:900, color:'var(--text-muted)' }}>
+                {isCyber?'[ TEKANAN.SYS ]':'Tekanan Lontar 🎯'}
+                {pressureRate>1 && <span style={{ color:'var(--accent-4)', marginLeft:4 }}>×{pressureRate.toFixed(1)}</span>}
+              </span>
+              <span style={{ fontFamily:'var(--font-hud)', fontSize:14, color:'var(--accent-3)', fontWeight:900 }}>{Math.round(pressure)}%</span>
+            </div>
+            <ProgBar pct={pressure} cssVar="--pressure-bar"/>
+          </Glass>
+
+          <BoostPanel boost={activeBoost} isCyber={isCyber}/>
+
+          {/* Launch Button */}
+          <button className="jbtn"
+            onMouseDown={startCharge} onMouseUp={stopCharge}
+            onTouchStart={e=>{e.preventDefault();startCharge()}} onTouchEnd={e=>{e.preventDefault();stopCharge()}}
+            disabled={phase==='countdown'||phase==='flying'||phase==='landed'}
+            style={{ background: phase==='charging'?'linear-gradient(135deg,var(--accent-4),var(--accent-3))':'linear-gradient(135deg,var(--accent-1),var(--accent-2))', padding:'18px 14px', borderRadius:18, fontFamily:'var(--font-hud)', fontWeight:900, fontSize:15, color:'#fff', boxShadow:'var(--btn-shadow),0 0 20px var(--btn-glow)', display:'flex', flexDirection:'column', alignItems:'center', gap:6, userSelect:'none', touchAction:'none' }}>
+            <span style={{ fontSize:28 }}>{phase==='charging'?'⚡':phase==='countdown'?'🔢':phase==='flying'?'🚀':'🪼'}</span>
+            <span>{phase==='charging'?(isCyber?'CHARGING...':'Mengisi…'):phase==='countdown'?(isCyber?'LAUNCHING...':'Menghitung…'):phase==='flying'?(isCyber?'IN_FLIGHT':'Terbang!'):phase==='landed'?(isCyber?'RESET':'Selesai!'):(isCyber?'INIT_LAUNCH':'Tahan → Isi Gula!')}</span>
+            <span style={{ fontSize:10, opacity:0.7, fontFamily:'var(--font-mono)' }}>{isCyber?'[HOLD]':'Tahan & Lepas'}</span>
+          </button>
+
+          <Glass style={{ padding:'12px 16px', textAlign:'center' }}>
+            <div style={{ fontSize:11, fontWeight:800, color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>
+              {isCyber?'> SHAKE device → +ENERGY':'📱 Kocok HP untuk bonus!'}
+            </div>
+            {shakeFlash && <div style={{ color:'var(--accent-4)', fontWeight:900, marginTop:4 }}>{isCyber?`[SHAKE +${shakeBonus}]`:`🔋 +${shakeBonus} Gula!`}</div>}
+          </Glass>
+
+          <Glass style={{ padding:'12px 16px' }}>
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'.08em', color:'var(--text-muted)', marginBottom:8 }}>{isCyber?'REWARD_TABLE':'Hadiah'}</div>
+            {[{pts:300,r:'1 Raffle Entry',ic:'🎟️'},{pts:600,r:'Free Ticket',ic:'🎫'},{pts:900,r:'NFT Bonus',ic:'🏆'}].map(r => (
+              <div key={r.pts} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6, opacity:score>=r.pts?1:0.45 }}>
+                <span style={{ fontSize:14 }}>{r.ic}</span>
+                <span style={{ fontSize:11, fontWeight:800, color:'var(--text-primary)', fontFamily:'var(--font-mono)' }}>{r.pts}+ → {r.r}</span>
+                {score>=r.pts && <span style={{ marginLeft:'auto', fontSize:12, color:'var(--accent-4)' }}>✓</span>}
+              </div>
+            ))}
+          </Glass>
+        </div>
+      </div>
     </div>
   )
 }
+/* ═══════════════════════════════════════════════════════════════
+   INVENTORY VIEW bentar fix satu persatu
+═══════════════════════════════════════════════════════════════ */
 
 export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, addToast }) => {
   const isCyber = theme === 'theme-cyber'
