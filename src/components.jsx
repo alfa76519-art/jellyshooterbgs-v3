@@ -64,47 +64,174 @@ export const NFT_BOOSTS = {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   3. VISUAL COMPONENTS & ATOMS
+   [4] SHARED UI — Glass, PageBg, Toaster, JBtn, ProgBar, Badge, BoostPanel
 ═══════════════════════════════════════════════════════════════ */
-export const Glass = ({ children, style = {}, className = '' }) => (<div className={`glass ${className}`} style={style}>{children}</div>)
+export const Glass = ({ children, style = {}, className = '' }) => (
+  <div className={`glass ${className}`} style={style}>{children}</div>
+)
+
 export const PageBg = () => (
   <div className="page-bg">
-    {[1, 2, 3, 4].map(i => <div key={i} className="blob" style={{ background: `var(--blob-${i})`, animationDelay: `${(i-1)*-4}s` }} />)}
-  </div>
-)
-export const Toaster = ({ toasts = [] }) => (
-  <div style={{ position:'fixed', top:20, right:20, zIndex:9999, display:'flex', flexDirection:'column', gap:10, pointerEvents:'none' }}>
-    {toasts.map(t => (
-      <div key={t.id} className="glass tin" style={{ pointerEvents:'auto', padding:'12px 18px', borderRadius:20, background: t.type==='success'?'var(--toast-ok)':'var(--toast-err)', color:'#fff', fontWeight:800 }}>{t.message}</div>
+    {[1,2,3,4].map(i => (
+      <div key={i} className="blob" style={{
+        width: i===1?500:i===2?420:i===3?350:290,
+        height: i===1?500:i===2?420:i===3?350:290,
+        background: `var(--blob-${i})`,
+        filter: `blur(var(--blob-blur))`,
+        top:    i===1?'-120px':i===2?'40%':i===3?'auto':'20%',
+        left:   i===1?'-100px':i===2?'auto':i===3?'28%':'48%',
+        right:  i===2?'-80px':'auto',
+        bottom: i===3?'-80px':'auto',
+        animationDelay: `${(i-1)*-4}s`,
+      }}/>
     ))}
   </div>
 )
-export const JBtn = ({ children, grad, onClick, disabled, size='md', icon, sx={} }) => (
-  <button className="jbtn" onClick={onClick} disabled={disabled} style={{ background: grad || 'linear-gradient(135deg,var(--accent-1),var(--accent-2))', borderRadius:999, color:'#fff', fontWeight:900, padding:'10px 22px', border:'none', display:'inline-flex', alignItems:'center', gap:6, ...sx }}>{icon} {children}</button>
-)
-export const ProgBar = ({ pct, cssVar='--fuel-bar' }) => (
-  <div style={{ background:'var(--prog-bg)', borderRadius:999, height:10, overflow:'hidden' }}>
-    <div style={{ width:`${Math.min(pct,100)}%`, height:'100%', background:`var(${cssVar})`, transition:'width 0.2s' }} />
+
+export const Toaster = ({ toasts = [] }) => (
+  <div style={{ position:'fixed', top:20, right:20, zIndex:9999, display:'flex', flexDirection:'column', gap:10, pointerEvents:'none' }}>
+    {toasts.map(t => (
+      <div key={t.id} className="glass tin" style={{
+        pointerEvents:'auto', padding:'12px 18px', borderRadius:20,
+        background: t.type==='success'?'var(--toast-ok)':t.type==='error'?'var(--toast-err)':'var(--toast-pnd)',
+        color:'#fff', fontWeight:800, fontSize:13, minWidth:240,
+        border:'1.5px solid rgba(255,255,255,0.35)',
+        display:'flex', alignItems:'center', gap:8,
+      }}>
+        <span>{t.type==='success'?'🎉':t.type==='error'?'😢':'⏳'}</span>
+        {t.message}
+      </div>
+    ))}
   </div>
 )
 
-// SVGs
-export const JellyFish = ({ size = 60, className = '' }) => (
-  <svg width={size} height={size * 1.4} viewBox="0 0 60 84" className={className} style={{ filter: 'drop-shadow(0 4px 14px var(--jelly-glow))' }}>
-    <ellipse cx="30" cy="28" rx="26" ry="22" fill="var(--jelly-body)" fillOpacity="0.85" />
-    <path d="M10 48 Q10 65 15 75 M22 50 Q22 70 20 80 M38 50 Q38 70 40 80 M50 48 Q50 65 45 75" stroke="var(--jelly-body)" strokeWidth="2.5" fill="none" opacity="0.7" />
-  </svg>
-)
-export const CyberBot = ({ size = 60 }) => (
-  <svg width={size} height={size} viewBox="0 0 60 60" style={{ filter: 'drop-shadow(0 0 12px var(--jelly-glow))' }}>
-    <rect x="10" y="10" width="40" height="40" rx="4" fill="var(--jelly-body)" fillOpacity="0.2" stroke="var(--jelly-body)" strokeWidth="1.5" />
-    <rect x="18" y="22" width="10" height="4" fill="var(--jelly-body)" /><rect x="32" y="22" width="10" height="4" fill="var(--jelly-body)" />
-  </svg>
-)
-export const JellyCube = ({ size = 48 }) => (
-  <svg width={size} height={size} viewBox="0 0 60 60"><rect x="10" y="10" width="40" height="40" rx="12" fill="var(--accent-2)" fillOpacity="0.6" /></svg>
+export const JBtn = ({ children, grad, onClick, disabled, size='md', icon, sx={} }) => {
+  const pads = { xl:'16px 36px', lg:'13px 30px', md:'10px 22px', sm:'8px 16px', xs:'5px 12px' }
+  const fz   = { xl:17, lg:15, md:13, sm:12, xs:11 }
+  const s = pads[size] ? size : 'md'
+  return (
+    <button className="jbtn" onClick={onClick} disabled={disabled} style={{
+      background: disabled?'rgba(150,150,160,0.25)': grad||'linear-gradient(135deg,var(--accent-1),var(--accent-2))',
+      borderRadius:999, color: disabled?'var(--text-muted)':'#fff',
+      fontWeight:900, fontSize:fz[s], padding:pads[s],
+      display:'inline-flex', alignItems:'center', gap:6,
+      boxShadow: disabled?'none':'var(--btn-shadow)',
+      whiteSpace:'nowrap', border:'none', ...sx,
+    }}>
+      {icon && <span style={{ fontSize:(fz[s]||13)+4, lineHeight:1 }}>{icon}</span>}
+      {children}
+    </button>
+  )
+}
+
+export const ProgBar = ({ pct, cssVar='--fuel-bar' }) => (
+  <div style={{ background:'var(--prog-bg)', borderRadius:999, height:9, overflow:'hidden' }}>
+    <div style={{ width:`${Math.min(pct,100)}%`, height:'100%', background:`var(${cssVar})`, transition:'width 0.1s ease', position:'relative', overflow:'hidden' }}>
+      <div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)', backgroundSize:'200% 100%', animation:'shimmer 1.8s linear infinite' }}/>
+    </div>
+  </div>
 )
 
+export const Badge = ({ label, color }) => (
+  <span style={{ background:`${color}22`, border:`1.5px solid ${color}66`, color, fontSize:10, fontWeight:900, padding:'3px 10px', borderRadius:999, textTransform:'uppercase', letterSpacing:'.08em', fontFamily:'var(--font-mono)' }}>
+    {label}
+  </span>
+)
+
+export const BoostPanel = ({ boost, isCyber }) => {
+  if (!boost) return (
+    <Glass style={{ padding:'14px 16px', border:'1.5px dashed var(--nav-border)', textAlign:'center' }}>
+      <div style={{ fontSize:11, color:'var(--text-muted)', fontFamily:'var(--font-mono)', lineHeight:1.7 }}>
+        {isCyber ? '> NO_BOOST_DETECTED' : '🎯 No NFT Boost Active'}
+      </div>
+      <div style={{ fontSize:10, color:'var(--text-muted)', marginTop:6 }}>
+        {isCyber ? '> Go to INVENTORY tab' : '→ Equip NFTs in Inventory'}
+      </div>
+    </Glass>
+  )
+  return (
+    <Glass className="boost-active" style={{ padding:'14px 16px', border:`1.5px solid ${boost.color}66`, boxShadow:`0 0 20px ${boost.color}44, var(--card-shadow)` }}>
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
+        <span style={{ fontSize:20 }}>{boost.icon}</span>
+        <div>
+          <div style={{ fontFamily:'var(--font-mono)', fontSize:11, fontWeight:900, textTransform:'uppercase', color:boost.color }}>
+            {boost.label} ACTIVE
+          </div>
+          <div style={{ fontSize:9, color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>
+            {boost.count} NFT{boost.count>1?'s':''} equipped
+          </div>
+        </div>
+        <div style={{ marginLeft:'auto', fontFamily:'var(--font-hud)', fontSize:16, color:boost.color }}>
+          ×{boost.scoreMulti.toFixed(2)}
+        </div>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+        {boost.perks.map((p,i) => (
+          <div key={i} style={{ fontSize:11, color:'var(--text-primary)', fontFamily:'var(--font-mono)', fontWeight:700, display:'flex', gap:6, alignItems:'center' }}>
+            <span style={{ color:boost.color, fontSize:9 }}>▶</span>{p}
+          </div>
+        ))}
+      </div>
+    </Glass>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   [5] SVG COMPONENTS — JellyFish, CyberBot, JellyCube
+═══════════════════════════════════════════════════════════════ */
+export const JellyFish = ({ size = 60, className = '', style: sx = {} }) => (
+  <svg width={size} height={size*1.4} viewBox="0 0 60 84" className={className} style={{ filter:'drop-shadow(0 4px 14px var(--jelly-glow))', ...sx }}>
+    <defs>
+      <radialGradient id="jbg" cx="40%" cy="35%">
+        <stop offset="0%" stopColor="white" stopOpacity="0.7"/>
+        <stop offset="45%" stopColor="var(--jelly-body)" stopOpacity="0.95"/>
+        <stop offset="100%" stopColor="var(--jelly-body)" stopOpacity="0.65"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="30" cy="28" rx="26" ry="22" fill="url(#jbg)"/>
+    <ellipse cx="22" cy="18" rx="10" ry="6" fill="rgba(255,255,255,0.38)"/>
+    {[6,13,20,27,34,41,48,54].map((x,i) => (
+      <path key={i} d={`M${x} 48 Q${x-2} ${60+i*2} ${x} ${67+i*2}`} stroke="var(--jelly-body)" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.75"/>
+    ))}
+    {[10,22,38,50].map((x,i) => (
+      <path key={i} d={`M${x} 50 C${x-5} ${62} ${x+6} ${70} ${x-3} ${80}`} stroke="var(--jelly-body)" strokeWidth="1.8" strokeLinecap="round" fill="none" opacity="0.5"/>
+    ))}
+  </svg>
+)
+
+export const CyberBot = ({ size = 60, style: sx = {} }) => (
+  <svg width={size} height={size*1.3} viewBox="0 0 60 78" style={{ filter:'drop-shadow(0 0 12px var(--jelly-glow))', ...sx }}>
+    <defs>
+      <linearGradient id="cbg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="var(--jelly-body)" stopOpacity="0.2"/>
+        <stop offset="100%" stopColor="var(--jelly-body)" stopOpacity="0.9"/>
+      </linearGradient>
+    </defs>
+    <rect x="10" y="8" width="40" height="38" rx="4" fill="url(#cbg)" stroke="var(--jelly-body)" strokeWidth="1.5"/>
+    <rect x="16" y="18" width="10" height="6" rx="2" fill="var(--jelly-body)" opacity="0.9"/>
+    <rect x="34" y="18" width="10" height="6" rx="2" fill="var(--jelly-body)" opacity="0.9"/>
+    <rect x="18" y="32" width="24" height="4" rx="2" fill="none" stroke="var(--jelly-body)" strokeWidth="1" opacity="0.6"/>
+    {[20,24,28,32,36].map(x => <line key={x} x1={x} y1="32" x2={x} y2="36" stroke="var(--jelly-body)" strokeWidth="1" opacity="0.5"/>)}
+    {[18,30,42].map((x,i) => <rect key={i} x={x-4} y="46" width="8" height="16" rx="2" fill="var(--jelly-body)" opacity="0.7"/>)}
+    <line x1="30" y1="8" x2="30" y2="2" stroke="var(--jelly-body)" strokeWidth="2"/>
+    <circle cx="30" cy="2" r="2.5" fill="var(--jelly-body)"/>
+    <rect x="14" y="11" width="18" height="12" rx="2" fill="rgba(255,255,255,0.15)"/>
+  </svg>
+)
+
+export const JellyCube = ({ size = 48, style: sx = {} }) => (
+  <svg width={size} height={size} viewBox="0 0 60 60" style={{ filter:'drop-shadow(0 4px 12px var(--jelly-glow))', ...sx }}>
+    <defs>
+      <linearGradient id="cubeg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="white" stopOpacity="0.6"/>
+        <stop offset="60%" stopColor="var(--accent-2)" stopOpacity="0.9"/>
+        <stop offset="100%" stopColor="var(--accent-3)" stopOpacity="0.7"/>
+      </linearGradient>
+    </defs>
+    <rect x="10" y="10" width="40" height="40" rx="12" fill="url(#cubeg)"/>
+    <ellipse cx="24" cy="22" rx="8" ry="5" fill="rgba(255,255,255,0.42)"/>
+  </svg>
+)
 // THE MISSING COMPONENT!
 export const BoostPanel = ({ boost, isCyber }) => {
   if (!boost) return null;
