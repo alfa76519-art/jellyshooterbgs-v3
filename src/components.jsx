@@ -12,8 +12,13 @@ export function applyThemeToDOM(mode) {
 export function handleThemeChange(mode, setTheme) {
   const valid = ['theme-jelly', 'theme-light', 'theme-cyber']
   if (!valid.includes(mode)) return
+  
+  console.log("Switching theme to:", mode) // Cek di F12 Console
   applyThemeToDOM(mode)
-  if (setTheme) setTheme(mode)
+  
+  if (typeof setTheme === 'function') {
+    setTheme(mode)
+  }
 }
 
 export function switchTheme(mode, setTheme) { handleThemeChange(mode, setTheme) }
