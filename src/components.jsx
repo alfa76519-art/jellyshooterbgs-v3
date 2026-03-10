@@ -63,8 +63,6 @@ export const NFT_BOOSTS = {
   Uncommon:  { sugarRate: 1.15,pressureRate: 1.05,scoreMulti: 1.1, shakeBonus: 12, label: 'UNCOMMON BOOST',  color: '#ec4899', icon: '🩷', perks: ['1.15× Sugar Rate', '1.1× Score', 'Base Shake'] },
 }
 
-  return { ...merged, label: base.label, color: base.color, icon: base.icon, count: safeOwned.length, top }
-
 /* ═══════════════════════════════════════════════════════════════
    3. VISUAL COMPONENTS & ATOMS
 ═══════════════════════════════════════════════════════════════ */
