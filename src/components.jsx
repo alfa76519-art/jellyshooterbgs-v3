@@ -18,9 +18,33 @@ export function switchTheme(mode, setTheme) { handleThemeChange(mode, setTheme) 
 export function getSavedTheme() {
   try { return localStorage.getItem('userTheme') || 'theme-jelly' } catch (e) { return 'theme-jelly' }
 }
+export const NFT_BOOSTS = {
+  Legendary: { sugarRate: 2.5, pressureRate: 1.8, scoreMulti: 2.0, shakeBonus: 20, label: 'LEGENDARY BOOST', color: '#f59e0b', icon: '👑', perks: ['2.5× Sugar Rate', '2.0× Score', '+20 Shake Bonus'] },
+  Epic:      { sugarRate: 1.8, pressureRate: 1.4, scoreMulti: 1.5, shakeBonus: 16, label: 'EPIC BOOST',      color: '#8b5cf6', icon: '💜', perks: ['1.8× Sugar Rate', '1.5× Score', '+16 Shake Bonus'] },
+  Rare:      { sugarRate: 1.4, pressureRate: 1.2, scoreMulti: 1.25,shakeBonus: 14, label: 'RARE BOOST',      color: '#0ea5e9', icon: '🔵', perks: ['1.4× Sugar Rate', '1.25× Score', '+14 Shake Bonus'] },
+  Uncommon:  { sugarRate: 1.15,pressureRate: 1.05,scoreMulti: 1.1, shakeBonus: 12, label: 'UNCOMMON BOOST',  color: '#ec4899', icon: '🩷', perks: ['1.15× Sugar Rate', '1.1× Score', 'Base Shake'] },
+}
+
+export function computeActiveBoost(ownedNFTs) {
+  const safeOwned = Array.isArray(ownedNFTs) ? ownedNFTs : []
+  if (safeOwned.length === 0) return null
+  const merged = { sugarRate: 0, pressureRate: 0, scoreMulti: 0, shakeBonus: 0 }
+  const order = ['Legendary', 'Epic', 'Rare', 'Uncommon']
+  const top = order.find(r => safeOwned.some(n => n.rarity === r)) || 'Uncommon'
+  const base = NFT_BOOSTS[top] || NFT_BOOSTS['Uncommon']
+  safeOwned.forEach(n => {
+    const b = NFT_BOOSTS[n.rarity] || NFT_BOOSTS['Uncommon']
+    const isTop = n.rarity === top
+    merged.sugarRate    += b.sugarRate    * (isTop ? 1 : 0.1)
+    merged.pressureRate += b.pressureRate * (isTop ? 1 : 0.1)
+    merged.scoreMulti   += b.scoreMulti   * (isTop ? 1 : 0.1)
+    merged.shakeBonus   += b.shakeBonus   * (isTop ? 1 : 0.1)
+  })
+  return { ...merged, label: base.label, color: base.color, icon: base.icon, count: safeOwned.length, top }
+}
 
 /* ═══════════════════════════════════════════════════════════════
-   DATA JANGAN UBAH ENTE UBAH ANE PUKUL
+   INI DATA <--- JANGAN UBAH, ENTE UBAH ANE PUKUL!
 ═══════════════════════════════════════════════════════════════ */
 export const INITIAL_RAFFLES = [
   { id:1, emoji:'🪼', name:'Jellyfish Genesis', prize:'5,000 $BGS',       price:50,  sold:73, max:100, ends:'2h 14m',  hot:true  },
