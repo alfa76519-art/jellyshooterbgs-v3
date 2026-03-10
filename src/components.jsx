@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 /* ═══════════════════════════════════════════════════════════════
+   UTILITY FUNCTIONS (Obat Anti-Blank & Theme Fix)
+═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
    CSS VARIABLES — 3-MODE ARCHITECTURE
    All colors bound to CSS custom properties. Zero hardcode.
 ═══════════════════════════════════════════════════════════════ */
