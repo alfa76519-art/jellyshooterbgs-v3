@@ -169,7 +169,7 @@ export const BoostPanel = ({ boost, isCyber }) => {
         </div>
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
-        {boost.perks.map((p,i) => (
+        {(boost.perks||[]).map((p,i) => (
           <div key={i} style={{ fontSize:11, color:'var(--text-primary)', fontFamily:'var(--font-mono)', fontWeight:700, display:'flex', gap:6, alignItems:'center' }}>
             <span style={{ color:boost.color, fontSize:9 }}>▶</span>{p}
           </div>
