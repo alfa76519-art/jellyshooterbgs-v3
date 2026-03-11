@@ -1,3 +1,5 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { Glass, ProgBar, BoostPanel, CyberBot, JellyFish, computeActiveBoost, NFT_BOOSTS } from './components'
 // --- JELLY SHOOTER PRO (ANTI-BLANK) ---
 export const JellyShooterView = ({ theme, activeBoost: rawBoost }) => {
   const isCyber = theme === 'theme-cyber'
