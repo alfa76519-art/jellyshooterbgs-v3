@@ -134,3 +134,4 @@ export const JellyShooterView = ({ theme, activeBoost: rawBoost }) => {
     </div>
   )
 }
+export default App;
