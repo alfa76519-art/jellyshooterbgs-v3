@@ -223,9 +223,7 @@ export default function App() {
             {tab==='dashboard'    && <DashView theme={theme} connected={conn} balance={balance}
               tickets={tickets} setTickets={setTickets} setBalance={setBalance}
               addToast={addToast} activeBoost={activeBoost} />}
-            <div style={{display: tab==='jellyShooter' ? 'block' : 'none'}}>
-              <JellyShooterView theme={theme} activeBoost={activeBoost} />
-            </div>
+            {tab==='jellyShooter' && <JellyShooterView theme={theme} activeBoost={activeBoost} />}
             {tab==='inventory'    && <InvView theme={theme} connected={conn} addToast={addToast}
               nfts={nfts} setNfts={setNfts} setOwnedNFTs={setOwnedNFTs} />}
           </main>
