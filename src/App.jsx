@@ -37,16 +37,27 @@ export default function App() {
   }, [])
 
   const connect = async () => {
-    if (window.opnet) {
-      try {
-        const accounts = await window.opnet.requestAccounts();
-        setWallet(accounts[0]);
-        setConn(true);
-      } catch (e) {
-        addToast('User rejected connection', 'error');
-      }
-    } else {
-      addToast('Please install OP_Wallet!', 'error');
+    try {
+      const ik = new window.InterwovenKit({
+        chainId: "jelly-chain",
+        rpcUrl: "http://localhost:26657",
+        restUrl: "http://localhost:1317",
+        appName: "Jelly Shooter BGS v3"
+      });
+
+      const address = await ik.connect();
+      setWallet(address);
+      setConn(true);
+
+      const balances = await ik.getBalances(address);
+      const jellyBal = balances.find(b => b.denom === 'ujelly');
+      // Konversi ujelly ke JLY murni
+      setBalance(jellyBal ? (parseInt(jellyBal.amount) / 1000000).toFixed(2) : 0);
+
+      addToast(isCyber ? '> SESSION_ESTABLISHED' : 'Connected to Jelly-Chain!', 'success');
+    } catch (e) {
+      console.error(e);
+      addToast(isCyber ? '> ERR_CONNECTION_REJECTED' : 'Connection failed', 'error');
     }
   };
 
