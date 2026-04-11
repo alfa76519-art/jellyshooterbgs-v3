@@ -140,22 +140,126 @@ export const JellyShooterView = ({ theme, activeBoost, walletAddress }) => {
       <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
 
         {/* SEKTOR KIRI: KOTAK GAME RAKSASA (75% Lebar) */}
+        {/* SEKTOR KIRI: KOTAK GAME RAKSASA (75% Lebar) */}
         <Glass style={{ flex: 3, position: 'relative', height: 600, overflow: 'hidden', background: 'var(--game-bg)' }}>
-          {/* ... Pindahkan semua isi CANVAS / GAME LOGIC kamu ke sini ... */}
-          {/* ... Pastikan JellyPos dan Phase tetep jalan di sini ... */}
-        </Glass>
+          {/* 1. EFEK BACKGROUND GRID */}
+          {isCyber && (
+            <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--accent-1) 1px,transparent 1px),linear-gradient(90deg,var(--accent-1) 1px,transparent 1px)', backgroundSize: '30px 30px', opacity: 0.05, animation: 'gridPulse 3s ease-in-out infinite', pointerEvents: 'none', zIndex: 0 }} />
+          )}
 
+          {/* 2. EFEK PARTIKEL MELEDAK */}
+          {particles.map(p => (
+            <div key={p.id} style={{ position: 'absolute', left: '50%', bottom: 80, width: 8, height: 8, borderRadius: isCyber ? '2px' : '50%', background: 'var(--particle-clr)', '--px': `${p.px}px`, '--py': `${p.py}px`, animation: 'particleBurst 0.6s ease-out forwards', zIndex: 2 }} />
+          ))}
+
+          {/* 3. GARIS LANTAI */}
+          <div style={{ position: 'absolute', bottom: 70, left: 0, right: 0, height: 2, background: 'var(--game-border)', opacity: 0.4 }} />
+
+          {/* 4. KARAKTER JELLY / ROBOT (JELLYPOS) */}
+          <div style={{ position: 'absolute', left: '50%', bottom: 80 + ((phase === 'flying' || phase === 'landed') ? jellyPos : 0), transform: 'translateX(-50%)', zIndex: 5, animation: phase === 'charging' ? (isCyber ? 'cyberJitter 0.15s linear infinite' : 'jellyWobble 0.3s ease-in-out infinite') : phase === 'flying' ? 'none' : 'floatIdle 3.5s ease-in-out infinite', transition: 'bottom 0.05s linear' }}>
+            {isCyber ? <CyberBot size={72} /> : <JellyFish size={72} />}
+          </div>
+
+          {/* 5. COUNTDOWN ANGKA 3-2-1 */}
+          {phase === 'countdown' && (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, backdropFilter: 'blur(4px)', borderRadius: 'var(--card-radius)' }}>
+              <div style={{ fontFamily: 'var(--font-hud)', fontSize: 96, color: 'var(--accent-1)', animation: 'countdownAnim 0.9s ease-in-out forwards', textShadow: '0 0 40px var(--jelly-glow)' }}>{countdown}</div>
+            </div>
+          )}
+
+          {/* 6. HASIL SKOR PAS MENDARAT */}
+          {phase === 'landed' && (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, zIndex: 10, backdropFilter: 'blur(6px)', borderRadius: 'var(--card-radius)' }}>
+              <div style={{ fontFamily: 'var(--font-hud)', fontSize: 40, color: 'var(--accent-1)', textShadow: '0 0 30px var(--jelly-glow)' }}>{score} pts!</div>
+              <div style={{ fontFamily: 'var(--font-hud)', fontSize: 18, color: 'var(--text-muted)' }}>{tierLabel}</div>
+            </div>
+          )}
+
+          {/* 7. PETUNJUK IDLE */}
+          {phase === 'idle' && (
+            <div style={{ position: 'absolute', bottom: 14, left: 0, right: 0, textAlign: 'center', fontSize: 12, fontWeight: 800, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+              {isCyber ? '> HOLD_BUTTON or [SPACE]' : '💡 Tahan tombol atau SPACE'}
+            </div>
+          )}
+        </Glass>
+        {/* SEKTOR KANAN: SIDEBAR RAMPING (25% Lebar) */}
         {/* SEKTOR KANAN: SIDEBAR RAMPING (25% Lebar) */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* ... Pindahkan Panel Kadar Gula, Tekanan, dan Hadiah ke sini ... */}
-        </div>
 
-      </div>
-    </div>
-  )
-  // [8] INVENTORY VIEW - MOTOCATS RE-ASSEMBLED!
-  export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, addToast }) => {
-    const isCyber = theme === 'theme-cyber'; const safeNfts = Array.isArray(nfts) ? nfts : []; const RARITY_ORDER = { Legendary: 0, Epic: 1, Rare: 2, Uncommon: 3 }; const sorted = [...safeNfts].sort((a, b) => RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity]); const equipped = safeNfts.filter(n => n.equipped && n.owned); const activeBoost = computeActiveBoost(equipped)
-    const toggleEquip = (nft) => { if (!nft.owned) return; const newNfts = safeNfts.map(n => n.id === nft.id ? { ...n, equipped: !n.equipped } : n); setNfts(newNfts); setOwnedNFTs(newNfts.filter(n => n.equipped && n.owned)); addToast(nft.equipped ? `${nft.name} unequipped` : `${nft.name} equipped! 🚀`, nft.equipped ? 'error' : 'success') }
-    return (<div className="panel-enter" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}><Glass className="fup" style={{ padding: '20px 26px' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}><div><h2 style={{ fontFamily: 'var(--font-hud)', fontSize: 22, color: 'var(--text-primary)', marginBottom: 4 }}>{isCyber ? 'ASSET_VAULT.SYS' : '🎁 My Motocats'}</h2><p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{isCyber ? '> Equip NFTs → activate Shooter boost' : 'Equip NFTs untuk boost Jelly Shooter! 🚀'}</p></div><div style={{ display: 'flex', gap: 16 }}><div style={{ textAlign: 'center' }}><div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>OWNED</div><div style={{ fontFamily: 'var(--font-hud)', fontSize: 24, color: 'var(--text-primary)' }}>{safeNfts.filter(n => n.owned).length}</div></div><div style={{ textAlign: 'center' }}><div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>EQUIPPED</div><div style={{ fontFamily: 'var(--font-hud)', fontSize: 24, color: 'var(--accent-4)' }}>{equipped.length}</div></div></div></div></Glass>{activeBoost && (<Glass className="fup" style={{ padding: '16px 22px', border: `1.5px solid ${activeBoost.color}66`, boxShadow: `0 0 24px ${activeBoost.color}33,var(--card-shadow)` }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span style={{ fontSize: 28 }}>{activeBoost.icon}</span><div><div style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: 13, color: activeBoost.color }}>{activeBoost.label} ACTIVE</div><div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{equipped.length} NFT{equipped.length > 1 ? 's' : ''} equipped</div></div></div><div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>{[{ l: 'Sugar', v: `×${activeBoost.sugarRate.toFixed(2)}` }, { l: 'Score', v: `×${(activeBoost.scoreMulti || 1).toFixed(2)}` }, { l: 'Shake', v: `+${Math.round(activeBoost.shakeBonus)}` }].map(s => (<div key={s.l} style={{ textAlign: 'center', background: `${activeBoost.color}14`, border: `1px solid ${activeBoost.color}33`, borderRadius: 10, padding: '6px 12px' }}><div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{s.l}</div><div style={{ fontFamily: 'var(--font-hud)', fontSize: 16, color: activeBoost.color }}>{s.v}</div></div>))}</div></div></Glass>)}{!connected ? (<Glass className="fup" style={{ padding: 52, textAlign: 'center' }}>{isCyber ? <CyberBot size={80} style={{ margin: '0 auto 16px', display: 'block' }} /> : <JellyFish size={80} className="float-idle" style={{ margin: '0 auto 16px', display: 'block' }} />}<h3 style={{ fontFamily: 'var(--font-hud)', fontSize: 20, color: 'var(--text-primary)', marginBottom: 8 }}>{isCyber ? 'CONNECT_INITIA_REQUIRED' : 'Connect Initia to View'}</h3></Glass>) : (<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 14 }}>{sorted.map((nft, i) => { const boostDef = NFT_BOOSTS[nft.rarity]; return (<div key={nft.id} className={`glass fup ${nft.glow}`} style={{ padding: 18, overflow: 'hidden', position: 'relative', animationDelay: `${i * 0.08}s`, border: nft.equipped ? `2.5px solid ${nft.rc}` : `1.5px solid ${nft.rc}44`, borderRadius: 'var(--card-radius)', opacity: nft.owned ? 1 : 0.45, transition: 'transform 0.4s cubic-bezier(0.68,-0.55,0.265,1.55)', boxShadow: nft.equipped ? `0 0 24px ${nft.rc}55,var(--card-shadow)` : undefined }} onMouseEnter={e => { if (nft.owned) e.currentTarget.style.transform = 'translateY(-7px) scale(1.03)' }} onMouseLeave={e => e.currentTarget.style.transform = 'none'}><div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg,${nft.rc},${nft.rc}88)`, borderRadius: '24px 24px 0 0' }} />{nft.equipped && (<div style={{ position: 'absolute', top: 12, right: 12, background: `linear-gradient(135deg,${nft.rc},${nft.rc}aa)`, borderRadius: 999, padding: '3px 10px', fontSize: 9, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>{isCyber ? 'EQUIPPED' : '⚡ Equipped'}</div>)}<div style={{ width: '100%', aspectRatio: '1', borderRadius: 18, background: `linear-gradient(135deg,${nft.rc}44,${nft.rc}aa)`, border: `1.5px solid ${nft.rc}66`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 52, marginBottom: 14 }}>{nft.emoji}</div><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}><div><h4 style={{ fontFamily: 'var(--font-hud)', fontSize: 13, color: 'var(--text-primary)', marginBottom: 3 }}>{nft.name}</h4><p style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{nft.trait}</p></div><Badge label={nft.rarity} color={nft.rc} /></div>{nft.owned && (<div style={{ marginBottom: 10, padding: '8px 10px', borderRadius: 10, background: `${nft.rc}10`, border: `1px solid ${nft.rc}22` }}><div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: nft.rc, fontFamily: 'var(--font-mono)', marginBottom: 5 }}>{isCyber ? 'BOOST_STATS' : '⚡ Boost Stats'}</div><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>{[{ k: 'Sugar', v: `×${boostDef.sugarRate}` }, { k: 'Score', v: `×${boostDef.scoreMulti}` }].map(s => (<div key={s.k} style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}><span style={{ color: 'var(--text-muted)' }}>{s.k}: </span>{s.v}</div>))}</div></div>)}<div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><div style={{ display: 'flex', gap: 6 }}>{nft.owned ? (<JBtn grad={nft.equipped ? 'linear-gradient(135deg,rgba(200,180,220,0.2),rgba(200,180,220,0.05))' : `linear-gradient(135deg,${nft.rc},${nft.rc}bb)`} onClick={() => toggleEquip(nft)} size="xs" sx={nft.equipped ? { color: 'var(--text-primary)' } : {}}>{nft.equipped ? (isCyber ? 'UNEQUIP' : 'Unequip') : (isCyber ? 'EQUIP' : '⚡ Equip')}</JBtn>) : (<JBtn grad="rgba(150,150,160,0.15)" size="xs" disabled sx={{ color: 'var(--text-muted)', fontSize: 10 }}>{isCyber ? 'WIN_TO_UNLOCK' : 'Win in Raffle'}</JBtn>)}</div>{nft.owned && (<div style={{ display: 'flex', gap: 6 }}><JBtn grad="rgba(150,150,160,0.12)" size="xs" disabled sx={{ color: 'var(--text-muted)', fontSize: 9, flex: 1, justifyContent: 'center' }} icon="📋">{isCyber ? 'LIST.EXE' : 'List'} <span style={{ fontSize: 8, opacity: 0.6 }}>demo</span></JBtn><JBtn grad="rgba(150,150,160,0.12)" size="xs" disabled sx={{ color: 'var(--text-muted)', fontSize: 9, flex: 1, justifyContent: 'center' }} icon="↗">{isCyber ? 'TRANSFER.EXE' : 'Transfer'} <span style={{ fontSize: 8, opacity: 0.6 }}>demo</span></JBtn></div>)}</div></div>) })}</div>)}<Glass className="fup" style={{ padding: '14px 20px', textAlign: 'center' }}><p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{isCyber ? '> Stack multiple NFTs for additive bonus' : '💡 Equip multiple NFTs untuk stacked bonuses!'}</p></Glass></div>)
-  }
+          {/* 1. PANEL KADAR GULA */}
+          <Glass style={{ padding: '16px 18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 900, color: 'var(--text-muted)' }}>
+                {isCyber ? '[ POWER.CORE ]' : 'Kadar Gula ⚡'}
+              </span>
+              <span style={{ fontFamily: 'var(--font-hud)', fontSize: 14, color: 'var(--accent-1)', fontWeight: 900 }}>
+                {Math.round(sugar)}%
+              </span>
+            </div>
+            <ProgBar pct={sugar} cssVar="--fuel-bar" />
+          </Glass>
+
+          {/* 2. PANEL TEKANAN LONTAR */}
+          <Glass style={{ padding: '16px 18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 900, color: 'var(--text-muted)' }}>
+                {isCyber ? '[ TEKANAN.SYS ]' : 'Tekanan Lontar 🎯'}
+              </span>
+              <span style={{ fontFamily: 'var(--font-hud)', fontSize: 14, color: 'var(--accent-3)', fontWeight: 900 }}>
+                {Math.round(pressure)}%
+              </span>
+            </div>
+            <ProgBar pct={pressure} cssVar="--pressure-bar" />
+          </Glass>
+
+          {/* 3. TOMBOL LUNCUR (JBTN) */}
+          <button
+            className="jbtn"
+            onMouseDown={startCharge}
+            onMouseUp={stopCharge}
+            onTouchStart={e => { e.preventDefault(); startCharge() }}
+            onTouchEnd={e => { e.preventDefault(); stopCharge() }}
+            disabled={phase === 'countdown' || phase === 'flying' || phase === 'landed'}
+            style={{
+              background: phase === 'charging' ? 'linear-gradient(135deg,var(--accent-4),var(--accent-3))' : 'linear-gradient(135deg,var(--accent-1),var(--accent-2))',
+              padding: '18px 14px', borderRadius: 18, fontFamily: 'var(--font-hud)', fontWeight: 900, fontSize: 15, color: '#fff',
+              boxShadow: 'var(--btn-shadow),0 0 20px var(--btn-glow)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, userSelect: 'none', touchAction: 'none'
+            }}
+          >
+            <span style={{ fontSize: 28 }}>
+              {phase === 'charging' ? '⚡' : phase === 'countdown' ? '🔢' : phase === 'flying' ? '🚀' : '🪼'}
+            </span>
+            <span>
+              {phase === 'charging' ? (isCyber ? 'CHARGING...' : 'Mengisi…') :
+                phase === 'countdown' ? (isCyber ? 'LAUNCHING...' : 'Menghitung…') :
+                  phase === 'flying' ? (isCyber ? 'IN_FLIGHT' : 'Terbang!') :
+                    phase === 'landed' ? (isCyber ? 'RESET' : 'Selesai!') :
+                      (isCyber ? 'INIT_LAUNCH' : 'Tahan → Isi Gula!')}
+            </span>
+          </button>
+
+          {/* 4. TABEL HADIAH SULTAN */}
+          <Glass style={{ padding: '12px 16px' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+              {isCyber ? 'REWARD_TABLE' : 'Hadiah'}
+            </div>
+            {[{ pts: 300, r: '1 Raffle Entry', ic: '🎟️' }, { pts: 600, r: 'Free Ticket', ic: '🎫' }, { pts: 900, r: 'NFT Bonus', ic: '🏆' }].map(r => (
+              <div key={r.pts} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, opacity: score >= r.pts ? 1 : 0.45 }}>
+                <span style={{ fontSize: 14 }}>{r.ic}</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                  {r.pts}+ → {r.r}
+                </span>
+              </div>
+            ))} {/* <--- PERBAIKAN: Menambah kurung kurawal penutup map */}
+          </Glass>
+        </div> {/* <--- PERBAIKAN: Menambah div penutup sidebar (flex:1) */}
+      </div> {/* <--- PERBAIKAN: Menambah div penutup flex container 75/25 */}
+    </div> /* <--- PERBAIKAN: Menambah div penutup panel-enter utama */
+  );
+};
+// [8] INVENTORY VIEW - MOTOCATS RE-ASSEMBLED!
+export const InvView = ({ theme, connected, nfts = [], setNfts, setOwnedNFTs, addToast }) => {
+  const isCyber = theme === 'theme-cyber'; const safeNfts = Array.isArray(nfts) ? nfts : []; const RARITY_ORDER = { Legendary: 0, Epic: 1, Rare: 2, Uncommon: 3 }; const sorted = [...safeNfts].sort((a, b) => RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity]); const equipped = safeNfts.filter(n => n.equipped && n.owned); const activeBoost = computeActiveBoost(equipped)
+  const toggleEquip = (nft) => { if (!nft.owned) return; const newNfts = safeNfts.map(n => n.id === nft.id ? { ...n, equipped: !n.equipped } : n); setNfts(newNfts); setOwnedNFTs(newNfts.filter(n => n.equipped && n.owned)); addToast(nft.equipped ? `${nft.name} unequipped` : `${nft.name} equipped! 🚀`, nft.equipped ? 'error' : 'success') }
+  return (<div className="panel-enter" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}><Glass className="fup" style={{ padding: '20px 26px' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}><div><h2 style={{ fontFamily: 'var(--font-hud)', fontSize: 22, color: 'var(--text-primary)', marginBottom: 4 }}>{isCyber ? 'ASSET_VAULT.SYS' : '🎁 My Motocats'}</h2><p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{isCyber ? '> Equip NFTs → activate Shooter boost' : 'Equip NFTs untuk boost Jelly Shooter! 🚀'}</p></div><div style={{ display: 'flex', gap: 16 }}><div style={{ textAlign: 'center' }}><div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>OWNED</div><div style={{ fontFamily: 'var(--font-hud)', fontSize: 24, color: 'var(--text-primary)' }}>{safeNfts.filter(n => n.owned).length}</div></div><div style={{ textAlign: 'center' }}><div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>EQUIPPED</div><div style={{ fontFamily: 'var(--font-hud)', fontSize: 24, color: 'var(--accent-4)' }}>{equipped.length}</div></div></div></div></Glass>{activeBoost && (<Glass className="fup" style={{ padding: '16px 22px', border: `1.5px solid ${activeBoost.color}66`, boxShadow: `0 0 24px ${activeBoost.color}33,var(--card-shadow)` }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span style={{ fontSize: 28 }}>{activeBoost.icon}</span><div><div style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: 13, color: activeBoost.color }}>{activeBoost.label} ACTIVE</div><div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{equipped.length} NFT{equipped.length > 1 ? 's' : ''} equipped</div></div></div><div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>{[{ l: 'Sugar', v: `×${activeBoost.sugarRate.toFixed(2)}` }, { l: 'Score', v: `×${(activeBoost.scoreMulti || 1).toFixed(2)}` }, { l: 'Shake', v: `+${Math.round(activeBoost.shakeBonus)}` }].map(s => (<div key={s.l} style={{ textAlign: 'center', background: `${activeBoost.color}14`, border: `1px solid ${activeBoost.color}33`, borderRadius: 10, padding: '6px 12px' }}><div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{s.l}</div><div style={{ fontFamily: 'var(--font-hud)', fontSize: 16, color: activeBoost.color }}>{s.v}</div></div>))}</div></div></Glass>)}{!connected ? (<Glass className="fup" style={{ padding: 52, textAlign: 'center' }}>{isCyber ? <CyberBot size={80} style={{ margin: '0 auto 16px', display: 'block' }} /> : <JellyFish size={80} className="float-idle" style={{ margin: '0 auto 16px', display: 'block' }} />}<h3 style={{ fontFamily: 'var(--font-hud)', fontSize: 20, color: 'var(--text-primary)', marginBottom: 8 }}>{isCyber ? 'CONNECT_INITIA_REQUIRED' : 'Connect Initia to View'}</h3></Glass>) : (<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 14 }}>{sorted.map((nft, i) => { const boostDef = NFT_BOOSTS[nft.rarity]; return (<div key={nft.id} className={`glass fup ${nft.glow}`} style={{ padding: 18, overflow: 'hidden', position: 'relative', animationDelay: `${i * 0.08}s`, border: nft.equipped ? `2.5px solid ${nft.rc}` : `1.5px solid ${nft.rc}44`, borderRadius: 'var(--card-radius)', opacity: nft.owned ? 1 : 0.45, transition: 'transform 0.4s cubic-bezier(0.68,-0.55,0.265,1.55)', boxShadow: nft.equipped ? `0 0 24px ${nft.rc}55,var(--card-shadow)` : undefined }} onMouseEnter={e => { if (nft.owned) e.currentTarget.style.transform = 'translateY(-7px) scale(1.03)' }} onMouseLeave={e => e.currentTarget.style.transform = 'none'}><div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg,${nft.rc},${nft.rc}88)`, borderRadius: '24px 24px 0 0' }} />{nft.equipped && (<div style={{ position: 'absolute', top: 12, right: 12, background: `linear-gradient(135deg,${nft.rc},${nft.rc}aa)`, borderRadius: 999, padding: '3px 10px', fontSize: 9, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>{isCyber ? 'EQUIPPED' : '⚡ Equipped'}</div>)}<div style={{ width: '100%', aspectRatio: '1', borderRadius: 18, background: `linear-gradient(135deg,${nft.rc}44,${nft.rc}aa)`, border: `1.5px solid ${nft.rc}66`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 52, marginBottom: 14 }}>{nft.emoji}</div><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}><div><h4 style={{ fontFamily: 'var(--font-hud)', fontSize: 13, color: 'var(--text-primary)', marginBottom: 3 }}>{nft.name}</h4><p style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{nft.trait}</p></div><Badge label={nft.rarity} color={nft.rc} /></div>{nft.owned && (<div style={{ marginBottom: 10, padding: '8px 10px', borderRadius: 10, background: `${nft.rc}10`, border: `1px solid ${nft.rc}22` }}><div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: nft.rc, fontFamily: 'var(--font-mono)', marginBottom: 5 }}>{isCyber ? 'BOOST_STATS' : '⚡ Boost Stats'}</div><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>{[{ k: 'Sugar', v: `×${boostDef.sugarRate}` }, { k: 'Score', v: `×${boostDef.scoreMulti}` }].map(s => (<div key={s.k} style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}><span style={{ color: 'var(--text-muted)' }}>{s.k}: </span>{s.v}</div>))}</div></div>)}<div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><div style={{ display: 'flex', gap: 6 }}>{nft.owned ? (<JBtn grad={nft.equipped ? 'linear-gradient(135deg,rgba(200,180,220,0.2),rgba(200,180,220,0.05))' : `linear-gradient(135deg,${nft.rc},${nft.rc}bb)`} onClick={() => toggleEquip(nft)} size="xs" sx={nft.equipped ? { color: 'var(--text-primary)' } : {}}>{nft.equipped ? (isCyber ? 'UNEQUIP' : 'Unequip') : (isCyber ? 'EQUIP' : '⚡ Equip')}</JBtn>) : (<JBtn grad="rgba(150,150,160,0.15)" size="xs" disabled sx={{ color: 'var(--text-muted)', fontSize: 10 }}>{isCyber ? 'WIN_TO_UNLOCK' : 'Win in Raffle'}</JBtn>)}</div>{nft.owned && (<div style={{ display: 'flex', gap: 6 }}><JBtn grad="rgba(150,150,160,0.12)" size="xs" disabled sx={{ color: 'var(--text-muted)', fontSize: 9, flex: 1, justifyContent: 'center' }} icon="📋">{isCyber ? 'LIST.EXE' : 'List'} <span style={{ fontSize: 8, opacity: 0.6 }}>demo</span></JBtn><JBtn grad="rgba(150,150,160,0.12)" size="xs" disabled sx={{ color: 'var(--text-muted)', fontSize: 9, flex: 1, justifyContent: 'center' }} icon="↗">{isCyber ? 'TRANSFER.EXE' : 'Transfer'} <span style={{ fontSize: 8, opacity: 0.6 }}>demo</span></JBtn></div>)}</div></div>) })}</div>)}<Glass className="fup" style={{ padding: '14px 20px', textAlign: 'center' }}><p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{isCyber ? '> Stack multiple NFTs for additive bonus' : '💡 Equip multiple NFTs untuk stacked bonuses!'}</p></Glass></div>)
+}
