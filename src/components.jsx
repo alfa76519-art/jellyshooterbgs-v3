@@ -130,10 +130,10 @@ export const JellyShooterView = ({ theme, activeBoost, walletAddress }) => {
   useEffect(() => { const kd = e => { if (e.code === 'Space') { e.preventDefault(); startCharge() } }; const ku = e => { if (e.code === 'Space') { e.preventDefault(); stopCharge() } }; window.addEventListener('keydown', kd); window.addEventListener('keyup', ku); return () => { window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku) } }, [startCharge, stopCharge])
   const tierLabel = score >= 900 ? '🏆 LEGENDARY' : score >= 600 ? '💜 EPIC' : score >= 300 ? '🔵 RARE' : '🌱 STARTER'
   return (
-    <div className="panel-enter" style={{ display: 'flex', flexDirection: 'column', gap: 15, width: '100%', padding: '0 10px' }}>
+    <div className="panel-enter" style={{ display: 'flex', flexDirection: 'column', gap: 15, width: '96vw', maxWidth: '1800px', margin: '0 auto' }}>
 
       {/* HEADER TETEP DI ATAS */}
-      <Glass className="fup" style={{ padding: '18px 24px' }}>
+      <Glass className="fup" style={{ padding: '15px 24px', width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <div>
             <h2 style={{ fontFamily: 'var(--font-hud)', fontSize: 22, color: 'var(--text-primary)', marginBottom: 4 }}>
@@ -153,10 +153,10 @@ export const JellyShooterView = ({ theme, activeBoost, walletAddress }) => {
       </Glass>
 
       {/* --- AREA UTAMA (LAYOUT 75/25) --- */}
-      <div style={{ display: 'flex', gap: 15, width: '100%', alignItems: 'stretch' }}>
+      <div style={{ display: 'flex', gap: 20, width: '100%', alignItems: 'stretch' }}>
 
         {/* SEKTOR KIRI: KOTAK GAME RAKSASA (KOTAK HIJAU SULTAN) */}
-        <Glass style={{ flex: 4.5, position: 'relative', height: '700px', overflow: 'hidden', background: 'var(--game-bg)', borderRadius: '24px' }}>
+        <Glass style={{ flex: 4, position: 'relative', height: '600px', overflow: 'hidden', background: 'var(--game-bg)' }}>
           {isCyber && (
             <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--accent-1) 1px,transparent 1px),linear-gradient(90deg,var(--accent-1) 1px,transparent 1px)', backgroundSize: '30px 30px', opacity: 0.05, animation: 'gridPulse 3s ease-in-out infinite', pointerEvents: 'none' }} />
           )}
@@ -181,7 +181,7 @@ export const JellyShooterView = ({ theme, activeBoost, walletAddress }) => {
         </Glass>
 
         {/* SEKTOR KANAN: KOLOM FUNGSI RAMPING (KOTAK KUNING SULTAN) */}
-        <div style={{ flex: 1.1, display: 'flex', flexDirection: 'column', gap: 10, minWidth: '260px' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, minWidth: '280px' }}>
 
           {/* 1. STATUS PANEL */}
           <Glass style={{ padding: '15px', borderRadius: '20px' }}>
