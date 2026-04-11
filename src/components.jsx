@@ -130,131 +130,99 @@ export const JellyShooterView = ({ theme, activeBoost, walletAddress }) => {
   useEffect(() => { const kd = e => { if (e.code === 'Space') { e.preventDefault(); startCharge() } }; const ku = e => { if (e.code === 'Space') { e.preventDefault(); stopCharge() } }; window.addEventListener('keydown', kd); window.addEventListener('keyup', ku); return () => { window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku) } }, [startCharge, stopCharge])
   const tierLabel = score >= 900 ? '🏆 LEGENDARY' : score >= 600 ? '💜 EPIC' : score >= 300 ? '🔵 RARE' : '🌱 STARTER'
   return (
-    <div className="panel-enter" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+    <div className="panel-enter" style={{ display: 'flex', flexDirection: 'column', gap: 15, width: '100%', padding: '0 10px' }}>
+
       {/* HEADER TETEP DI ATAS */}
       <Glass className="fup" style={{ padding: '18px 24px' }}>
-        {/* ... isi header kamu yang lama ... */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h2 style={{ fontFamily: 'var(--font-hud)', fontSize: 22, color: 'var(--text-primary)', marginBottom: 4 }}>
+              {isCyber ? '🤖 CYBER LAUNCHER' : '🪼 Jelly Shooter'}
+            </h2>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+              {isCyber ? '> Hold [SPACE] or button to charge' : 'Tahan tombol / SPACE → isi gula → lepas → luncur! 🚀'}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>SCORE</div>
+              <div style={{ fontFamily: 'var(--font-hud)', fontSize: 28, color: 'var(--accent-1)' }}>{score}</div>
+            </div>
+          </div>
+        </div>
       </Glass>
 
-      {/* INI KUNCI LAYAR LEBAR: Ganti 'game-grid' kamu! */}
-      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+      {/* --- AREA UTAMA (LAYOUT 75/25) --- */}
+      <div style={{ display: 'flex', gap: 15, width: '100%', alignItems: 'stretch' }}>
 
-        {/* SEKTOR KIRI: KOTAK GAME RAKSASA (75% Lebar) */}
-        {/* SEKTOR KIRI: KOTAK GAME RAKSASA (75% Lebar) */}
-        <Glass style={{ flex: 3, position: 'relative', height: 600, overflow: 'hidden', background: 'var(--game-bg)' }}>
-          {/* 1. EFEK BACKGROUND GRID */}
+        {/* SEKTOR KIRI: KOTAK GAME RAKSASA (KOTAK HIJAU SULTAN) */}
+        <Glass style={{ flex: 4.5, position: 'relative', height: '700px', overflow: 'hidden', background: 'var(--game-bg)', borderRadius: '24px' }}>
           {isCyber && (
-            <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--accent-1) 1px,transparent 1px),linear-gradient(90deg,var(--accent-1) 1px,transparent 1px)', backgroundSize: '30px 30px', opacity: 0.05, animation: 'gridPulse 3s ease-in-out infinite', pointerEvents: 'none', zIndex: 0 }} />
+            <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--accent-1) 1px,transparent 1px),linear-gradient(90deg,var(--accent-1) 1px,transparent 1px)', backgroundSize: '30px 30px', opacity: 0.05, animation: 'gridPulse 3s ease-in-out infinite', pointerEvents: 'none' }} />
           )}
-
-          {/* 2. EFEK PARTIKEL MELEDAK */}
           {particles.map(p => (
             <div key={p.id} style={{ position: 'absolute', left: '50%', bottom: 80, width: 8, height: 8, borderRadius: isCyber ? '2px' : '50%', background: 'var(--particle-clr)', '--px': `${p.px}px`, '--py': `${p.py}px`, animation: 'particleBurst 0.6s ease-out forwards', zIndex: 2 }} />
           ))}
-
-          {/* 3. GARIS LANTAI */}
           <div style={{ position: 'absolute', bottom: 70, left: 0, right: 0, height: 2, background: 'var(--game-border)', opacity: 0.4 }} />
-
-          {/* 4. KARAKTER JELLY / ROBOT (JELLYPOS) */}
           <div style={{ position: 'absolute', left: '50%', bottom: 80 + ((phase === 'flying' || phase === 'landed') ? jellyPos : 0), transform: 'translateX(-50%)', zIndex: 5, animation: phase === 'charging' ? (isCyber ? 'cyberJitter 0.15s linear infinite' : 'jellyWobble 0.3s ease-in-out infinite') : phase === 'flying' ? 'none' : 'floatIdle 3.5s ease-in-out infinite', transition: 'bottom 0.05s linear' }}>
             {isCyber ? <CyberBot size={72} /> : <JellyFish size={72} />}
           </div>
-
-          {/* 5. COUNTDOWN ANGKA 3-2-1 */}
           {phase === 'countdown' && (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, backdropFilter: 'blur(4px)', borderRadius: 'var(--card-radius)' }}>
-              <div style={{ fontFamily: 'var(--font-hud)', fontSize: 96, color: 'var(--accent-1)', animation: 'countdownAnim 0.9s ease-in-out forwards', textShadow: '0 0 40px var(--jelly-glow)' }}>{countdown}</div>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, backdropFilter: 'blur(4px)' }}>
+              <div style={{ fontFamily: 'var(--font-hud)', fontSize: 120, color: 'var(--accent-1)', textShadow: '0 0 40px var(--jelly-glow)' }}>{countdown}</div>
             </div>
           )}
-
-          {/* 6. HASIL SKOR PAS MENDARAT */}
           {phase === 'landed' && (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, zIndex: 10, backdropFilter: 'blur(6px)', borderRadius: 'var(--card-radius)' }}>
-              <div style={{ fontFamily: 'var(--font-hud)', fontSize: 40, color: 'var(--accent-1)', textShadow: '0 0 30px var(--jelly-glow)' }}>{score} pts!</div>
-              <div style={{ fontFamily: 'var(--font-hud)', fontSize: 18, color: 'var(--text-muted)' }}>{tierLabel}</div>
-            </div>
-          )}
-
-          {/* 7. PETUNJUK IDLE */}
-          {phase === 'idle' && (
-            <div style={{ position: 'absolute', bottom: 14, left: 0, right: 0, textAlign: 'center', fontSize: 12, fontWeight: 800, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-              {isCyber ? '> HOLD_BUTTON or [SPACE]' : '💡 Tahan tombol atau SPACE'}
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, zIndex: 10, backdropFilter: 'blur(6px)' }}>
+              <div style={{ fontFamily: 'var(--font-hud)', fontSize: 60, color: 'var(--accent-1)', textShadow: '0 0 30px var(--jelly-glow)' }}>{score} pts!</div>
+              <div style={{ fontFamily: 'var(--font-hud)', fontSize: 24, color: 'var(--text-muted)' }}>{tierLabel}</div>
             </div>
           )}
         </Glass>
-        {/* SEKTOR KANAN: SIDEBAR RAMPING (25% Lebar) */}
-        {/* SEKTOR KANAN: SIDEBAR RAMPING (25% Lebar) */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-          {/* 1. PANEL KADAR GULA */}
-          <Glass style={{ padding: '16px 18px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 900, color: 'var(--text-muted)' }}>
-                {isCyber ? '[ POWER.CORE ]' : 'Kadar Gula ⚡'}
-              </span>
-              <span style={{ fontFamily: 'var(--font-hud)', fontSize: 14, color: 'var(--accent-1)', fontWeight: 900 }}>
-                {Math.round(sugar)}%
-              </span>
+        {/* SEKTOR KANAN: KOLOM FUNGSI RAMPING (KOTAK KUNING SULTAN) */}
+        <div style={{ flex: 1.1, display: 'flex', flexDirection: 'column', gap: 10, minWidth: '260px' }}>
+
+          {/* 1. STATUS PANEL */}
+          <Glass style={{ padding: '15px', borderRadius: '20px' }}>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ fontSize: '11px', fontWeight: 900, color: 'var(--text-muted)' }}>Kadar Gula ⚡</span>
+                <span style={{ fontSize: '14px', fontWeight: 999, color: 'var(--accent-1)' }}>{Math.round(sugar)}%</span>
+              </div>
+              <ProgBar pct={sugar} cssVar="--fuel-bar" />
             </div>
-            <ProgBar pct={sugar} cssVar="--fuel-bar" />
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ fontSize: '11px', fontWeight: 900, color: 'var(--text-muted)' }}>Tekanan Lontar 🎯</span>
+                <span style={{ fontSize: '14px', fontWeight: 999, color: 'var(--accent-3)' }}>{Math.round(pressure)}%</span>
+              </div>
+              <ProgBar pct={pressure} cssVar="--pressure-bar" />
+            </div>
           </Glass>
 
-          {/* 2. PANEL TEKANAN LONTAR */}
-          <Glass style={{ padding: '16px 18px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 900, color: 'var(--text-muted)' }}>
-                {isCyber ? '[ TEKANAN.SYS ]' : 'Tekanan Lontar 🎯'}
-              </span>
-              <span style={{ fontFamily: 'var(--font-hud)', fontSize: 14, color: 'var(--accent-3)', fontWeight: 900 }}>
-                {Math.round(pressure)}%
-              </span>
-            </div>
-            <ProgBar pct={pressure} cssVar="--pressure-bar" />
-          </Glass>
+          {/* 2. BOOST PANEL */}
+          <BoostPanel boost={activeBoost} isCyber={isCyber} />
 
-          {/* 3. TOMBOL LUNCUR (JBTN) */}
-          <button
-            className="jbtn"
-            onMouseDown={startCharge}
-            onMouseUp={stopCharge}
-            onTouchStart={e => { e.preventDefault(); startCharge() }}
-            onTouchEnd={e => { e.preventDefault(); stopCharge() }}
-            disabled={phase === 'countdown' || phase === 'flying' || phase === 'landed'}
-            style={{
-              background: phase === 'charging' ? 'linear-gradient(135deg,var(--accent-4),var(--accent-3))' : 'linear-gradient(135deg,var(--accent-1),var(--accent-2))',
-              padding: '18px 14px', borderRadius: 18, fontFamily: 'var(--font-hud)', fontWeight: 900, fontSize: 15, color: '#fff',
-              boxShadow: 'var(--btn-shadow),0 0 20px var(--btn-glow)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, userSelect: 'none', touchAction: 'none'
-            }}
-          >
-            <span style={{ fontSize: 28 }}>
-              {phase === 'charging' ? '⚡' : phase === 'countdown' ? '🔢' : phase === 'flying' ? '🚀' : '🪼'}
-            </span>
-            <span>
-              {phase === 'charging' ? (isCyber ? 'CHARGING...' : 'Mengisi…') :
-                phase === 'countdown' ? (isCyber ? 'LAUNCHING...' : 'Menghitung…') :
-                  phase === 'flying' ? (isCyber ? 'IN_FLIGHT' : 'Terbang!') :
-                    phase === 'landed' ? (isCyber ? 'RESET' : 'Selesai!') :
-                      (isCyber ? 'INIT_LAUNCH' : 'Tahan → Isi Gula!')}
-            </span>
+          {/* 3. TOMBOL TEMBAK UTAMA */}
+          <button className="jbtn" onMouseDown={startCharge} onMouseUp={stopCharge} onTouchStart={e => { e.preventDefault(); startCharge() }} onTouchEnd={e => { e.preventDefault(); stopCharge() }} disabled={phase !== 'idle' && phase !== 'charging'} style={{ width: '100%', padding: '24px', borderRadius: '20px', background: phase === 'charging' ? 'linear-gradient(135deg,var(--accent-4),var(--accent-3))' : 'linear-gradient(135deg,var(--accent-1),var(--accent-2))', color: '#fff', fontWeight: 900, fontSize: '18px', boxShadow: 'var(--btn-shadow)' }}>
+            {phase === 'charging' ? '⚡ MENGISI...' : '🚀 TEMBAK JELLY!'}
           </button>
 
-          {/* 4. TABEL HADIAH SULTAN */}
-          <Glass style={{ padding: '12px 16px' }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
-              {isCyber ? 'REWARD_TABLE' : 'Hadiah'}
-            </div>
+          {/* 4. HADIAH PANEL */}
+          <Glass style={{ padding: '15px', borderRadius: '20px', flex: 1 }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 900, color: 'var(--text-muted)', marginBottom: 10 }}>HADIAH SULTAN</div>
             {[{ pts: 300, r: '1 Raffle Entry', ic: '🎟️' }, { pts: 600, r: 'Free Ticket', ic: '🎫' }, { pts: 900, r: 'NFT Bonus', ic: '🏆' }].map(r => (
-              <div key={r.pts} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, opacity: score >= r.pts ? 1 : 0.45 }}>
-                <span style={{ fontSize: 14 }}>{r.ic}</span>
-                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
-                  {r.pts}+ → {r.r}
-                </span>
+              <div key={r.pts} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, opacity: score >= r.pts ? 1 : 0.4 }}>
+                <span style={{ fontSize: 16 }}>{r.ic}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>{r.pts}+ → {r.r}</span>
               </div>
-            ))} {/* <--- PERBAIKAN: Menambah kurung kurawal penutup map */}
+            ))}
           </Glass>
-        </div> {/* <--- PERBAIKAN: Menambah div penutup sidebar (flex:1) */}
-      </div> {/* <--- PERBAIKAN: Menambah div penutup flex container 75/25 */}
-    </div> /* <--- PERBAIKAN: Menambah div penutup panel-enter utama */
+        </div>
+
+      </div>
+    </div>
   );
 };
 // [8] INVENTORY VIEW - MOTOCATS RE-ASSEMBLED!
