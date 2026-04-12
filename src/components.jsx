@@ -110,9 +110,33 @@ export const DashView = ({ theme, connected, balance, tickets, setTickets, setBa
 }
 
 // [7] JELLY SHOOTER VIEW - ENGINE START!
-export const JellyShooterView = ({ theme, activeBoost, setBalance, addToast, balance, walletAddress }) => {
-  const isCyber = theme === 'theme-cyber'; const sugarRate = activeBoost ? Math.min(activeBoost.sugarRate || 1, 4) : 1; const pressureRate = activeBoost ? Math.min(activeBoost.pressureRate || 1, 3) : 1; const scoreMulti = activeBoost ? (activeBoost.scoreMulti || 1) : 1; const shakeBonus = activeBoost ? (activeBoost.shakeBonus || 12) : 12
-  const { buyTicket } = useJellyRaffle(walletAddress); const [phase, setPhase] = useState('idle'); const [sugar, setSugar] = useState(0); const [pressure, setPressure] = useState(0); const [countdown, setCountdown] = useState(3); const [score, setScore] = useState(0); const [bestScore, setBest] = useState(0); const [particles, setParticles] = useState([]); const [shakeFlash, setShakeFlash] = useState(false); const [jellyPos, setJellyPos] = useState(0); const [thrusterOn, setThruster] = useState(false)
+export const JellyShooterView = ({ theme, activeBoost, setBalance, addToast, balance, walletAddress, setWalletAddress }) => {
+
+  // 1. SAFETY GATE (Paling Atas)
+  if (!theme) return <div style={{ color: 'white', padding: '100px', textAlign: 'center' }}>🚀 LOADING...</div>;
+
+  // 2. LOGIC WALLET (Suntikan Baru Sultan)
+  const handleConnect = async () => {
+    if (typeof window.keplr === "undefined") {
+      addToast('Keplr not found! Redirecting...', 'error');
+      window.open("https://chromewebstore.google.com/detail/keplr/dmkamcknogkgcdfhhbddcghachkejeap", "_blank");
+      return;
+    }
+    try {
+      const chainId = 'initiation-2';
+      await window.keplr.enable(chainId);
+      const accounts = await window.getOfflineSigner(chainId).getAccounts();
+      setWalletAddress(accounts[0].address);
+      addToast('Wallet Connected! 🚀', 'success');
+    } catch (err) { addToast('Connect failed ❌', 'error'); }
+  };
+
+  // 3. LOGIC GAME (YANG INI JANGAN DIHAPUS!)
+  const isCyber = theme === 'theme-cyber';
+  const sugarRate = activeBoost ? Math.min(activeBoost.sugarRate || 1, 4) : 1;
+  const { buyTicket } = useJellyRaffle(walletAddress);
+  const [phase, setPhase] = useState('idle');
+  const [sugar, setSugar] = useState(0);
   const chargeRef = useRef(null); const countRef = useRef(null); const flyRef = useRef(null); const sugarRef = useRef(0); const pressRef = useRef(0); const phaseRef = useRef('idle'); const lastShake = useRef(0); const sugarRateRef = useRef(sugarRate); const pressRateRef = useRef(pressureRate); const scoreMultiRef = useRef(scoreMulti); const shakeBonusRef = useRef(shakeBonus)
   useEffect(() => { sugarRef.current = sugar }, [sugar]); useEffect(() => { pressRef.current = pressure }, [pressure]); useEffect(() => { phaseRef.current = phase }, [phase]); useEffect(() => { sugarRateRef.current = sugarRate }, [sugarRate]); useEffect(() => { pressRateRef.current = pressureRate }, [pressureRate]); useEffect(() => { scoreMultiRef.current = scoreMulti }, [scoreMulti]); useEffect(() => { shakeBonusRef.current = shakeBonus }, [shakeBonus])
   useEffect(() => {
