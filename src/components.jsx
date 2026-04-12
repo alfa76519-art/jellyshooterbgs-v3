@@ -110,7 +110,7 @@ export const DashView = ({ theme, connected, balance, tickets, setTickets, setBa
 }
 
 // [7] JELLY SHOOTER VIEW - ENGINE START!
-export const JellyShooterView = ({ theme, activeBoost, walletAddress }) => {
+export const JellyShooterView = ({ theme, activeBoost, setBalance, addToast, balance, walletAddress }) => {
   const isCyber = theme === 'theme-cyber'; const sugarRate = activeBoost ? Math.min(activeBoost.sugarRate || 1, 4) : 1; const pressureRate = activeBoost ? Math.min(activeBoost.pressureRate || 1, 3) : 1; const scoreMulti = activeBoost ? (activeBoost.scoreMulti || 1) : 1; const shakeBonus = activeBoost ? (activeBoost.shakeBonus || 12) : 12
   const { buyTicket } = useJellyRaffle(walletAddress); const [phase, setPhase] = useState('idle'); const [sugar, setSugar] = useState(0); const [pressure, setPressure] = useState(0); const [countdown, setCountdown] = useState(3); const [score, setScore] = useState(0); const [bestScore, setBest] = useState(0); const [particles, setParticles] = useState([]); const [shakeFlash, setShakeFlash] = useState(false); const [jellyPos, setJellyPos] = useState(0); const [thrusterOn, setThruster] = useState(false)
   const chargeRef = useRef(null); const countRef = useRef(null); const flyRef = useRef(null); const sugarRef = useRef(0); const pressRef = useRef(0); const phaseRef = useRef('idle'); const lastShake = useRef(0); const sugarRateRef = useRef(sugarRate); const pressRateRef = useRef(pressureRate); const scoreMultiRef = useRef(scoreMulti); const shakeBonusRef = useRef(shakeBonus)
@@ -120,11 +120,57 @@ export const JellyShooterView = ({ theme, activeBoost, walletAddress }) => {
     window.addEventListener('devicemotion', handler, true); return () => window.removeEventListener('devicemotion', handler, true)
   }, [])
   const spawnParticle = useCallback(() => { const id = Date.now() + Math.random(); const angle = (Math.random() - 0.5) * 65; const dist = 32 + Math.random() * 52; setParticles(p => [...p, { id, px: Math.sin(angle * Math.PI / 180) * dist, py: 42 + Math.random() * 32 }].slice(-20)); setTimeout(() => setParticles(p => p.filter(x => x.id !== id)), 600) }, [])
-  const launchNow = useCallback(() => {
-    const power = sugarRef.current; const press = pressRef.current; const final = Math.round((power * 10 + press * 5) * scoreMultiRef.current)
-    if (walletAddress && buyTicket) { try { const txOptions = { signer: window.InterwovenKit, refundTo: walletAddress, feeRate: 10 }; buyTicket(50n * (10n ** 18n), txOptions).catch(e => console.warn(e)) } catch (e) { } }
-    setPhase('flying'); let pos = 0; const target = power * 2.8; flyRef.current = setInterval(() => { pos += (target - pos) * 0.08 + 1.5; setJellyPos(pos); if (pos >= target - 5) { clearInterval(flyRef.current); setScore(final); setBest(b => Math.max(b, final)); setPhase('landed'); for (let i = 0; i < 14; i++) spawnParticle(); setTimeout(() => { setJellyPos(0); setSugar(0); setPressure(0) }, 2200); setTimeout(() => setPhase('idle'), 2800) } }, 16)
-  }, [spawnParticle, walletAddress, buyTicket])
+  // [STEP 2] REAL REWARD INJECTION!
+  const launchNow = useCallback(async () => {
+    const power = sugarRef.current;
+    const press = pressRef.current;
+
+    // LOGIC SKOR & REWARD (100 PTS = 1 $JLY)
+    const finalScore = Math.round((power * 10 + press * 5) * scoreMultiRef.current);
+    const rewardAmount = BigInt(Math.floor(finalScore / 100)) * (10n ** 18n);
+
+    setPhase('flying');
+    let pos = 0;
+    const target = power * 2.8;
+
+    flyRef.current = setInterval(async () => {
+      pos += (target - pos) * 0.08 + 1.5;
+      setJellyPos(pos);
+
+      if (pos >= target - 5) {
+        clearInterval(flyRef.current);
+        setScore(finalScore);
+        setBest(b => Math.max(b, finalScore));
+        setPhase('landed');
+
+        // --- 🚨 START REAL TRANSACTION TO KEPLR ---
+        if (walletAddress && rewardAmount > 0n) {
+          addToast(isCyber ? '> MINTING_REWARD_IN_PROGRESS...' : '⏳ Minting your $JLY...', 'pending');
+          try {
+            const txOptions = { signer: window.InterwovenKit, refundTo: walletAddress, feeRate: 10 };
+
+            // Manggil Smart Contract buat klaim JLY sesuai hasil score
+            const txId = await buyTicket(rewardAmount, txOptions);
+
+            if (txId) {
+              addToast(isCyber ? '> TX_CONFIRMED: REWARD_SENT!' : '🚀 Reward masuk kantong!', 'success');
+              // Update saldo di UI secara real-time
+              setBalance(prev => prev + Number(rewardAmount / (10n ** 18n)));
+            }
+          } catch (e) {
+            console.warn("Keplr TX Failed:", e);
+            addToast(isCyber ? '> ERR: TX_ABORTED' : '❌ Transaksi gagal/dibatalkan', 'error');
+          }
+        }
+        // --- 🚨 END REAL TRANSACTION ---
+
+        for (let i = 0; i < 14; i++) spawnParticle();
+        setTimeout(() => { setJellyPos(0); setSugar(0); setPressure(0) }, 2200);
+        setTimeout(() => setPhase('idle'), 2800);
+      }
+    }, 16);
+    // DEPENDENCIES HARUS LENGKAP BIAR GAK BUG!
+  }, [spawnParticle, walletAddress, buyTicket, isCyber, setBalance, addToast]);
   const stopCharge = useCallback(() => { clearInterval(chargeRef.current); setThruster(false); if (sugarRef.current < 10) { setPhase('idle'); setSugar(0); setPressure(0); return }; setPhase('countdown'); let c = 3; setCountdown(c); countRef.current = setInterval(() => { c--; if (c <= 0) { clearInterval(countRef.current); launchNow() } else setCountdown(c) }, 900) }, [launchNow])
   const startCharge = useCallback(() => { if (phaseRef.current !== 'idle') return; setPhase('charging'); setThruster(true); chargeRef.current = setInterval(() => { setSugar(s => { const n = Math.min(s + 1.8 * sugarRateRef.current, 100); sugarRef.current = n; return n }); setPressure(p => { const n = Math.min(p + 1.2 * pressRateRef.current, 100); pressRef.current = n; return n }); spawnParticle(); if (sugarRef.current >= 100) stopCharge() }, 50) }, [spawnParticle, stopCharge])
   useEffect(() => { const kd = e => { if (e.code === 'Space') { e.preventDefault(); startCharge() } }; const ku = e => { if (e.code === 'Space') { e.preventDefault(); stopCharge() } }; window.addEventListener('keydown', kd); window.addEventListener('keyup', ku); return () => { window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku) } }, [startCharge, stopCharge])
@@ -144,6 +190,20 @@ export const JellyShooterView = ({ theme, activeBoost, walletAddress }) => {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+            {/* TOMBOL CONNECT KEPLR SULTAN */}
+            <button
+              className="jbtn"
+              onClick={handleConnect}
+              style={{ padding: '8px 16px', borderRadius: '12px', background: 'var(--accent-gradient)', color: '#fff', fontWeight: 900, border: 'none', cursor: 'pointer' }}
+            >
+              {walletAddress ? (
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                  {walletAddress.substring(0, 6)}...{walletAddress.substring(walletAddress.length - 4)}
+                </span>
+              ) : (
+                '🔗 Connect Keplr'
+              )}
+            </button>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>SCORE</div>
               <div style={{ fontFamily: 'var(--font-hud)', fontSize: 28, color: 'var(--accent-1)' }}>{score}</div>
