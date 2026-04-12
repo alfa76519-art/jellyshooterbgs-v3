@@ -141,6 +141,14 @@ export const JellyShooterView = ({ theme, activeBoost, setBalance, addToast, bal
   const { buyTicket } = useJellyRaffle(walletAddress);
   const [phase, setPhase] = useState('idle');
   const [sugar, setSugar] = useState(0);
+  const [pressure, setPressure] = useState(0);
+  const [jellyPos, setJellyPos] = useState(0);
+  const [score, setScore] = useState(0);
+  const [best, setBest] = useState(0);
+  const [countdown, setCountdown] = useState(0);
+  const [particles, setParticles] = useState([]);
+  const [thruster, setThruster] = useState(false);
+  const [shakeFlash, setShakeFlash] = useState(false);
   const chargeRef = useRef(null); const countRef = useRef(null); const flyRef = useRef(null); const sugarRef = useRef(0); const pressRef = useRef(0); const phaseRef = useRef('idle'); const lastShake = useRef(0); const sugarRateRef = useRef(sugarRate); const pressRateRef = useRef(pressureRate); const scoreMultiRef = useRef(scoreMulti); const shakeBonusRef = useRef(shakeBonus)
   useEffect(() => { sugarRef.current = sugar }, [sugar]); useEffect(() => { pressRef.current = pressure }, [pressure]); useEffect(() => { phaseRef.current = phase }, [phase]); useEffect(() => { sugarRateRef.current = sugarRate }, [sugarRate]); useEffect(() => { pressRateRef.current = pressureRate }, [pressureRate]); useEffect(() => { scoreMultiRef.current = scoreMulti }, [scoreMulti]); useEffect(() => { shakeBonusRef.current = shakeBonus }, [shakeBonus])
   useEffect(() => {

@@ -34,30 +34,32 @@ export default function App() {
   }, [])
 
   // --- MESIN BARU: INITIA L2 INTERWOVEN ---
+  // --- MESIN BARU: DIRECT KEPLR BYPASS (SULTAN BRANGAS) ---
   const connect = async () => {
-    try {
-      const ik = new window.InterwovenKit({
-        chainId: "jelly-chain",
-        rpcUrl: "http://localhost:26657",
-        restUrl: "http://localhost:1317",
-        appName: "Jelly Shooter BGS v3"
-      });
+    if (!window.keplr) {
+      addToast(isCyber ? '> ERR: KEPLR_NOT_FOUND' : 'Pasang Keplr dulu Juragan! 🦊', 'error');
+      window.open("https://chromewebstore.google.com/detail/keplr/dmkamcknogkgcdfhhbddcghachkejeap", "_blank");
+      return;
+    }
 
-      const address = await ik.connect();
+    try {
+      const chainId = "initiation-2";
+      await window.keplr.enable(chainId);
+
+      const offlineSigner = window.getOfflineSigner(chainId);
+      const accounts = await offlineSigner.getAccounts();
+      const address = accounts[0].address;
+
       setWallet(address);
       setConn(true);
+      setBalance(0);
 
-      const balances = await ik.getBalances(address);
-      const jellyBal = balances.find(b => b.denom === 'ujelly');
-      setBalance(jellyBal ? (parseInt(jellyBal.amount) / 1000000).toFixed(2) : 0);
-
-      addToast(isCyber ? '> SESSION_ESTABLISHED' : 'Connected to Jelly-Chain!', 'success');
+      addToast(isCyber ? '> SESSION_ESTABLISHED' : 'Gacor! Connected to Initia! 🚀', 'success');
     } catch (e) {
       console.error(e);
-      addToast(isCyber ? '> ERR_CONNECTION_REJECTED' : 'Connection failed', 'error');
+      addToast(isCyber ? '> ERR_CONNECTION_REJECTED' : 'Koneksi gagal/dibatalkan ❌', 'error');
     }
   };
-
   const disconnect = () => {
     setConn(false); setWallet(''); setBalance(0); setTickets({})
     addToast(isCyber ? '> SESSION_TERMINATED' : 'Wallet disconnected', 'error')
@@ -128,17 +130,7 @@ export default function App() {
           <main style={{ flex: 1, padding: '24px 20px 60px', maxWidth: 960, width: '100%', margin: '0 auto' }}>
             {/* INI KUNCI SAKTI: KIRIM WALLET ADDRESS KE VIEW! */}
             {tab === 'dashboard' && <DashView theme={theme} connected={conn} balance={balance} tickets={tickets} setTickets={setTickets} setBalance={setBalance} addToast={addToast} activeBoost={activeBoost} walletAddress={wallet} />}
-            {tab === 'jellyShooter' && (
-              <JellyShooterView
-                theme={theme}
-                activeBoost={activeBoost}
-                walletAddress={wallet}
-                setWallet={setWallet}
-                setBalance={setBalance}
-                addToast={addToast}
-                balance={balance}
-              />
-            )}
+            {tab === 'jellyShooter' && <JellyShooterView theme={theme} activeBoost={activeBoost} walletAddress={wallet} />}
             {tab === 'inventory' && <InvView theme={theme} connected={conn} addToast={addToast} nfts={nfts} setNfts={setNfts} setOwnedNFTs={setOwnedNFTs} />}
           </main>
 
