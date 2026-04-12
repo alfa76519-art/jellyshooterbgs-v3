@@ -128,7 +128,17 @@ export default function App() {
           <main style={{ flex: 1, padding: '24px 20px 60px', maxWidth: 960, width: '100%', margin: '0 auto' }}>
             {/* INI KUNCI SAKTI: KIRIM WALLET ADDRESS KE VIEW! */}
             {tab === 'dashboard' && <DashView theme={theme} connected={conn} balance={balance} tickets={tickets} setTickets={setTickets} setBalance={setBalance} addToast={addToast} activeBoost={activeBoost} walletAddress={wallet} />}
-            {tab === 'jellyShooter' && <JellyShooterView theme={theme} activeBoost={activeBoost} walletAddress={wallet} />}
+            {tab === 'jellyShooter' && (
+              <JellyShooterView
+                theme={theme}
+                activeBoost={activeBoost}
+                walletAddress={wallet}
+                setWallet={setWallet}
+                setBalance={setBalance}
+                addToast={addToast}
+                balance={balance}
+              />
+            )}
             {tab === 'inventory' && <InvView theme={theme} connected={conn} addToast={addToast} nfts={nfts} setNfts={setNfts} setOwnedNFTs={setOwnedNFTs} />}
           </main>
 
