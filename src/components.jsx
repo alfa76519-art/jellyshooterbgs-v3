@@ -134,6 +134,10 @@ export const JellyShooterView = ({ theme, activeBoost, setBalance, addToast, bal
   // 3. LOGIC GAME (YANG INI JANGAN DIHAPUS!)
   const isCyber = theme === 'theme-cyber';
   const sugarRate = activeBoost ? Math.min(activeBoost.sugarRate || 1, 4) : 1;
+  // SUNTIK BARIS INI (YANG HILANG):
+  const pressureRate = activeBoost ? Math.min(activeBoost.pressureRate || 1, 3) : 1;
+  const scoreMulti = activeBoost ? (activeBoost.scoreMulti || 1) : 1;
+  const shakeBonus = activeBoost ? (activeBoost.shakeBonus || 12) : 12;
   const { buyTicket } = useJellyRaffle(walletAddress);
   const [phase, setPhase] = useState('idle');
   const [sugar, setSugar] = useState(0);
